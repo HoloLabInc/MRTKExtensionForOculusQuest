@@ -5,23 +5,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.XR.MagicLeap;
+//using UnityEngine.XR.MagicLeap;
 
-namespace HoloLab.MixedReality.Toolkit.MagicLeapInput
+namespace HoloLab.MixedReality.Toolkit.OculusQuesInput
 {
     /// <summary>
-    /// Manages Magic Leap Hand Inputs
+    /// Manages Oculus Quest Hand Inputs
     /// </summary>
     [MixedRealityDataProvider(
         typeof(IMixedRealityInputSystem),
-        SupportedPlatforms.Lumin | SupportedPlatforms.WindowsEditor | SupportedPlatforms.MacEditor | SupportedPlatforms.LinuxEditor,
-        "Magic Leap Hand Input Manager")]
-    public class MagicLeapHandInputManager : BaseInputDeviceManager, IMixedRealityCapabilityCheck
+        SupportedPlatforms.Android | SupportedPlatforms.WindowsEditor | SupportedPlatforms.MacEditor | SupportedPlatforms.LinuxEditor,
+        "Oculus Quest Hand Input Manager")]
+    public class OculusQuestHandInputManager : BaseInputDeviceManager, IMixedRealityCapabilityCheck
     {
-        private MLKeyPointFilterLevel keyPointFilterLevel = MLKeyPointFilterLevel.ExtraSmoothed;
-        private MLPoseFilterLevel poseFilterLevel = MLPoseFilterLevel.ExtraRobust;
+        //private MLKeyPointFilterLevel keyPointFilterLevel = MLKeyPointFilterLevel.ExtraSmoothed;
+        //private MLPoseFilterLevel poseFilterLevel = MLPoseFilterLevel.ExtraRobust;
 
-        private Dictionary<Handedness, MagicLeapHand> trackedHands = new Dictionary<Handedness, MagicLeapHand>();
+        //private Dictionary<Handedness, MagicLeapHand> trackedHands = new Dictionary<Handedness, MagicLeapHand>();
+        private Dictionary<Handedness, OculusQuestHand> trackedHands = new Dictionary<Handedness, OculusQuestHand>();
 
         private bool mlInputStarted = false;
 
@@ -33,7 +34,7 @@ namespace HoloLab.MixedReality.Toolkit.MagicLeapInput
         /// <param name="name">Friendly name of the service.</param>
         /// <param name="priority">Service priority. Used to determine order of instantiation.</param>
         /// <param name="profile">The service's configuration profile.</param>
-        public MagicLeapHandInputManager(
+        public OculusQuestHandInputManager(
             IMixedRealityServiceRegistrar registrar,
             IMixedRealityInputSystem inputSystem,
             string name = null,
@@ -69,6 +70,7 @@ namespace HoloLab.MixedReality.Toolkit.MagicLeapInput
             return (capability == MixedRealityCapability.ArticulatedHand);
         }
 
+        /*
         private void StartMLInput()
         {
             MLResult result = MLHands.Start();
@@ -90,7 +92,9 @@ namespace HoloLab.MixedReality.Toolkit.MagicLeapInput
             MLHands.KeyPoseManager.SetKeyPointsFilterLevel(keyPointFilterLevel);
             MLHands.KeyPoseManager.SetPoseFilterLevel(poseFilterLevel);
         }
+        */
 
+        /*
         private void StopMLInput()
         {
             if (MLInput.IsStarted)
@@ -102,10 +106,12 @@ namespace HoloLab.MixedReality.Toolkit.MagicLeapInput
                 MLInput.Stop();
             }
         }
+        */
 
         public override void Update()
         {
             // MLInput.Start() should be called after Start() in MonoBehaviour is called
+            /*
             if (!mlInputStarted)
             {
                 StartMLInput();
@@ -117,6 +123,7 @@ namespace HoloLab.MixedReality.Toolkit.MagicLeapInput
                 UpdateHand(MLHands.Left, Handedness.Left);
                 UpdateHand(MLHands.Right, Handedness.Right);
             }
+            */
         }
 
         protected void UpdateHand(MLHand mlHand, Handedness handedness)
@@ -132,7 +139,7 @@ namespace HoloLab.MixedReality.Toolkit.MagicLeapInput
             }
         }
 
-        private MagicLeapHand GetOrAddHand(Handedness handedness)
+        private OculusQuestHand GetOrAddHand(Handedness handedness)
         {
             if (trackedHands.ContainsKey(handedness))
             {
@@ -142,10 +149,10 @@ namespace HoloLab.MixedReality.Toolkit.MagicLeapInput
             // Add new hand
             var pointers = RequestPointers(SupportedControllerType.ArticulatedHand, handedness);
             var inputSourceType = InputSourceType.Hand;
-            var inputSource = InputSystem?.RequestNewGenericInputSource($"Magic Leap {handedness} Hand", pointers, inputSourceType);
+            var inputSource = InputSystem?.RequestNewGenericInputSource($"Oculus Quest {handedness} Hand", pointers, inputSourceType);
 
-            var controller = new MagicLeapHand(TrackingState.Tracked, handedness, inputSource);
-            controller.SetupConfiguration(typeof(MagicLeapHand), inputSourceType);
+            var controller = new OculusQuestHand(TrackingState.Tracked, handedness, inputSource);
+            controller.SetupConfiguration(typeof(OculusQuestHand), inputSourceType);
 
             for (int i = 0; i < controller.InputSource?.Pointers?.Length; i++)
             {

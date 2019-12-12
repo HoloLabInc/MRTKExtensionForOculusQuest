@@ -3,14 +3,14 @@ using Microsoft.MixedReality.Toolkit.Input;
 using Microsoft.MixedReality.Toolkit.Utilities;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.XR.MagicLeap;
+//using UnityEngine.XR.MagicLeap;
 
-namespace HoloLab.MixedReality.Toolkit.MagicLeapInput
+namespace HoloLab.MixedReality.Toolkit.OculusQuestInput
 {
     [MixedRealityController(
         SupportedControllerType.ArticulatedHand,
         new[] { Handedness.Left, Handedness.Right })]
-    public class MagicLeapHand : BaseController, IMixedRealityHand
+    public class OculusQuestHand : BaseController, IMixedRealityHand
     {
         protected Vector3 CurrentControllerPosition = Vector3.zero;
         protected Quaternion CurrentControllerRotation = Quaternion.identity;
@@ -32,7 +32,7 @@ namespace HoloLab.MixedReality.Toolkit.MagicLeapInput
         // private int[] handMeshTriangleIndices = null;
         // private Vector2[] handMeshUVs;
 
-        public MagicLeapHand(TrackingState trackingState, Handedness controllerHandedness, IMixedRealityInputSource inputSource = null, MixedRealityInteractionMapping[] interactions = null)
+        public OculusQuestHand(TrackingState trackingState, Handedness controllerHandedness, IMixedRealityInputSource inputSource = null, MixedRealityInteractionMapping[] interactions = null)
             : base(trackingState, controllerHandedness, inputSource, interactions)
         {
         }
