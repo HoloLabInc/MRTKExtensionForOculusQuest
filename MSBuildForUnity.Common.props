@@ -1,0 +1,19 @@
+<Project>
+  <PropertyGroup>
+    <MSBuildForUnityVersion>0.8.3</MSBuildForUnityVersion>
+    
+    <MSBuildForUnityGeneratedOutputDirectory>D:\work\1.Tools\MRTKExtensionForOculusQuest\MSBuild\Projects</MSBuildForUnityGeneratedOutputDirectory>
+    <UnityProjectAssetsPath>D:\work\1.Tools\MRTKExtensionForOculusQuest\Assets</UnityProjectAssetsPath>
+    <MSBuildForUnityDefaultOutputPath>$(UnityProjectAssetsPath)\Dependencies</MSBuildForUnityDefaultOutputPath>
+    
+    <UnityCurrentPlatform>Android</UnityCurrentPlatform>
+    <UnityCurrentTargetFramework>netstandard2.0</UnityCurrentTargetFramework>
+    
+    <UnityMajorVersion>2018</UnityMajorVersion>
+    <UnityMinorVersion>4</UnityMinorVersion>
+  </PropertyGroup>
+  
+  <Target Name="_RemoveOutputDirectory" AfterTargets="Clean">
+    <RemoveDir Directories="$(OutputPath)" />
+  </Target>
+</Project>
