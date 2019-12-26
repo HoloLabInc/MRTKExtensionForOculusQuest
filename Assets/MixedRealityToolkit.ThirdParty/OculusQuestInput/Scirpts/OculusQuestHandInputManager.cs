@@ -5,9 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-//using UnityEngine.XR.MagicLeap;
 
-namespace HoloLab.MixedReality.Toolkit.OculusQuesInput
+namespace HoloLab.MixedReality.Toolkit.OculusQuestInput
 {
     /// <summary>
     /// Manages Oculus Quest Hand Inputs
@@ -18,13 +17,12 @@ namespace HoloLab.MixedReality.Toolkit.OculusQuesInput
         "Oculus Quest Hand Input Manager")]
     public class OculusQuestHandInputManager : BaseInputDeviceManager, IMixedRealityCapabilityCheck
     {
-        //private MLKeyPointFilterLevel keyPointFilterLevel = MLKeyPointFilterLevel.ExtraSmoothed;
-        //private MLPoseFilterLevel poseFilterLevel = MLPoseFilterLevel.ExtraRobust;
-
-        //private Dictionary<Handedness, MagicLeapHand> trackedHands = new Dictionary<Handedness, MagicLeapHand>();
         private Dictionary<Handedness, OculusQuestHand> trackedHands = new Dictionary<Handedness, OculusQuestHand>();
 
-        private bool mlInputStarted = false;
+        private OVRHand rightHand;
+        private OVRSkeleton rightSkeleton;
+        private OVRHand leftHand;
+        private OVRSkeleton leftSkeleton;
 
         /// <summary>
         /// Constructor.
@@ -35,16 +33,47 @@ namespace HoloLab.MixedReality.Toolkit.OculusQuesInput
         /// <param name="priority">Service priority. Used to determine order of instantiation.</param>
         /// <param name="profile">The service's configuration profile.</param>
         public OculusQuestHandInputManager(
-            IMixedRealityServiceRegistrar registrar,
             IMixedRealityInputSystem inputSystem,
             string name = null,
             uint priority = DefaultPriority,
-            BaseMixedRealityProfile profile = null) : base(registrar, inputSystem, name, priority, profile) {
+            BaseMixedRealityProfile profile = null) : base(inputSystem, name, priority, profile) {
+        }
+
+        public override void Enable()
+        {
+            base.Enable();
+
+            var ovrCameraRig = GameObject.FindObjectOfType<OVRCameraRig>();
+            var ovrHands = ovrCameraRig.GetComponentsInChildren<OVRHand>();
+
+            foreach(var ovrHand in ovrHands)
+            {
+                var skeltonDataProvider = ovrHand as OVRSkeleton.IOVRSkeletonDataProvider;
+                var skeltonType = skeltonDataProvider.GetSkeletonType();
+
+                var ovrSkelton = ovrHand.GetComponent<OVRSkeleton>();
+                if (ovrSkelton == null)
+                {
+                    continue;
+                }
+
+                switch (skeltonType)
+                {
+                    case OVRSkeleton.SkeletonType.HandLeft:
+                        leftHand = ovrHand;
+                        leftSkeleton = ovrSkelton;
+                        break;
+                    case OVRSkeleton.SkeletonType.HandRight:
+                        rightHand = ovrHand;
+                        rightSkeleton = ovrSkelton;
+                        break;
+                }
+            }
         }
 
         public override void Disable()
         {
-            StopMLInput();
+            base.Disable();
 
             IMixedRealityInputSystem inputSystem = Service as IMixedRealityInputSystem;
 
@@ -70,68 +99,19 @@ namespace HoloLab.MixedReality.Toolkit.OculusQuesInput
             return (capability == MixedRealityCapability.ArticulatedHand);
         }
 
-        /*
-        private void StartMLInput()
-        {
-            MLResult result = MLHands.Start();
-            if (!result.IsOk)
-            {
-                Debug.LogError($"[MagicLeapHandInputManager] Failed starting MLHands. {result}");
-                return;
-            }
-
-            // Enable all KeyPoses
-            var keyPoseTypes = Enum.GetValues(typeof(MLHandKeyPose)).Cast<MLHandKeyPose>().ToArray();
-            bool status = MLHands.KeyPoseManager.EnableKeyPoses(keyPoseTypes, true, true);
-            if (!status)
-            {
-                Debug.LogError("[MagicLeapHandInputManager] Failed enabling tracked KeyPoses.");
-                return;
-            }
-
-            MLHands.KeyPoseManager.SetKeyPointsFilterLevel(keyPointFilterLevel);
-            MLHands.KeyPoseManager.SetPoseFilterLevel(poseFilterLevel);
-        }
-        */
-
-        /*
-        private void StopMLInput()
-        {
-            if (MLInput.IsStarted)
-            {
-                // Stop KeyPose detection
-                var keyPoseTypes = Enum.GetValues(typeof(MLHandKeyPose)).Cast<MLHandKeyPose>().ToArray();
-                MLHands.KeyPoseManager.EnableKeyPoses(keyPoseTypes, false, true);
-
-                MLInput.Stop();
-            }
-        }
-        */
-
         public override void Update()
         {
-            // MLInput.Start() should be called after Start() in MonoBehaviour is called
-            /*
-            if (!mlInputStarted)
-            {
-                StartMLInput();
-                mlInputStarted = true;
-            }
-
-            if (MLHands.IsStarted)
-            {
-                UpdateHand(MLHands.Left, Handedness.Left);
-                UpdateHand(MLHands.Right, Handedness.Right);
-            }
-            */
+            base.Update();
+            UpdateHand(rightHand, rightSkeleton, Handedness.Right);
+            UpdateHand(leftHand, leftSkeleton, Handedness.Left);
         }
 
-        protected void UpdateHand(MLHand mlHand, Handedness handedness)
+        protected void UpdateHand(OVRHand ovrHand, OVRSkeleton ovrSkeleton, Handedness handedness)
         {
-            if (mlHand.IsVisible)
+            if (ovrHand.IsTracked)
             {
                 var hand = GetOrAddHand(handedness);
-                hand.UpdateController(mlHand);
+                hand.UpdateController(ovrHand, ovrSkeleton);
             }
             else
             {

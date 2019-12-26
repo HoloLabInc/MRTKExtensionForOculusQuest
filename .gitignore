@@ -66,10 +66,12 @@ crashlytics-build.properties
 /Assets/XR.meta
 /Assets/TextMesh Pro
 /Assets/TextMesh Pro.meta
-/Assets/MagicLeap
-/Assets/MagicLeap.meta
+/Assets/Oculus
+/Assets/Oculus.meta
 /Assets/Plugins
 /Assets/Plugins.meta
+/Assets/Resources
+/Assets/Resources.meta
 
 # MRTK symbolic link
 /Assets/MixedRealityToolkit

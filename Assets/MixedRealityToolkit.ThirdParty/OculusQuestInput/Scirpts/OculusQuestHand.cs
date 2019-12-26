@@ -1,9 +1,11 @@
 ﻿using Microsoft.MixedReality.Toolkit;
 using Microsoft.MixedReality.Toolkit.Input;
 using Microsoft.MixedReality.Toolkit.Utilities;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
-//using UnityEngine.XR.MagicLeap;
+using static OVRSkeleton;
 
 namespace HoloLab.MixedReality.Toolkit.OculusQuestInput
 {
@@ -25,8 +27,6 @@ namespace HoloLab.MixedReality.Toolkit.OculusQuestInput
         private MixedRealityPose lastGripPose = MixedRealityPose.ZeroIdentity;
 
         private readonly HandRay handRay = new HandRay();
-
-        private static readonly float KeyPoseConfidenceThreshold = 0.3f;
 
         // TODO: Hand mesh
         // private int[] handMeshTriangleIndices = null;
@@ -80,11 +80,14 @@ namespace HoloLab.MixedReality.Toolkit.OculusQuestInput
         /// Update the controller data from the provided platform state
         /// </summary>
         /// <param name="interactionSourceState">The InteractionSourceState retrieved from the platform</param>
-        public void UpdateController(MLHand hand)
+        public void UpdateController(OVRHand hand, OVRSkeleton ovrSkeleton)
         {
-            if (!Enabled) { return; }
+            if (!Enabled)
+            {
+                return;
+            }
 
-            UpdateHandData(hand);
+            UpdateHandData(hand, ovrSkeleton);
 
             lastPointerPose = currentPointerPose;
             lastGripPose = currentGripPose;
@@ -108,15 +111,15 @@ namespace HoloLab.MixedReality.Toolkit.OculusQuestInput
             {
                 if (IsPositionAvailable && IsRotationAvailable)
                 {
-                    InputSystem?.RaiseSourcePoseChanged(InputSource, this, currentGripPose);
+                    CoreServices.InputSystem?.RaiseSourcePoseChanged(InputSource, this, currentGripPose);
                 }
                 else if (IsPositionAvailable && !IsRotationAvailable)
                 {
-                    InputSystem?.RaiseSourcePositionChanged(InputSource, this, currentPointerPosition);
+                    CoreServices.InputSystem?.RaiseSourcePositionChanged(InputSource, this, currentPointerPosition);
                 }
                 else if (!IsPositionAvailable && IsRotationAvailable)
                 {
-                    InputSystem?.RaiseSourceRotationChanged(InputSource, this, currentPointerRotation);
+                    CoreServices.InputSystem?.RaiseSourceRotationChanged(InputSource, this, currentPointerRotation);
                 }
             }
 
@@ -128,14 +131,14 @@ namespace HoloLab.MixedReality.Toolkit.OculusQuestInput
                         Interactions[i].PoseData = currentPointerPose;
                         if (Interactions[i].Changed)
                         {
-                            InputSystem?.RaisePoseInputChanged(InputSource, ControllerHandedness, Interactions[i].MixedRealityInputAction, currentPointerPose);
+                            CoreServices.InputSystem?.RaisePoseInputChanged(InputSource, ControllerHandedness, Interactions[i].MixedRealityInputAction, currentPointerPose);
                         }
                         break;
                     case DeviceInputType.SpatialGrip:
                         Interactions[i].PoseData = currentGripPose;
                         if (Interactions[i].Changed)
                         {
-                            InputSystem?.RaisePoseInputChanged(InputSource, ControllerHandedness, Interactions[i].MixedRealityInputAction, currentGripPose);
+                            CoreServices.InputSystem?.RaisePoseInputChanged(InputSource, ControllerHandedness, Interactions[i].MixedRealityInputAction, currentGripPose);
                         }
                         break;
                     case DeviceInputType.Select:
@@ -145,11 +148,11 @@ namespace HoloLab.MixedReality.Toolkit.OculusQuestInput
                         {
                             if (Interactions[i].BoolData)
                             {
-                                InputSystem?.RaiseOnInputDown(InputSource, ControllerHandedness, Interactions[i].MixedRealityInputAction);
+                                CoreServices.InputSystem?.RaiseOnInputDown(InputSource, ControllerHandedness, Interactions[i].MixedRealityInputAction);
                             }
                             else
                             {
-                                InputSystem?.RaiseOnInputUp(InputSource, ControllerHandedness, Interactions[i].MixedRealityInputAction);
+                                CoreServices.InputSystem?.RaiseOnInputUp(InputSource, ControllerHandedness, Interactions[i].MixedRealityInputAction);
                             }
                         }
                         break;
@@ -160,75 +163,89 @@ namespace HoloLab.MixedReality.Toolkit.OculusQuestInput
                         {
                             if (Interactions[i].BoolData)
                             {
-                                InputSystem?.RaiseOnInputDown(InputSource, ControllerHandedness, Interactions[i].MixedRealityInputAction);
+                                CoreServices.InputSystem?.RaiseOnInputDown(InputSource, ControllerHandedness, Interactions[i].MixedRealityInputAction);
                             }
                             else
                             {
-                                InputSystem?.RaiseOnInputUp(InputSource, ControllerHandedness, Interactions[i].MixedRealityInputAction);
+                                CoreServices.InputSystem?.RaiseOnInputUp(InputSource, ControllerHandedness, Interactions[i].MixedRealityInputAction);
                             }
                         }
                         break;
                     case DeviceInputType.IndexFinger:
-                        UpdateIndexFingerData(hand, Interactions[i]);
+                        UpdateIndexFingerData(Interactions[i]);
                         break;
                 }
             }
         }
 
+        #region HandJoints
         protected readonly Dictionary<TrackedHandJoint, MixedRealityPose> jointPoses = new Dictionary<TrackedHandJoint, MixedRealityPose>();
 
-        protected void UpdateHandData(MLHand hand)
+        protected readonly Dictionary<BoneId, TrackedHandJoint> boneJointMapping = new Dictionary<BoneId, TrackedHandJoint>()
         {
-            // Update joint positions
-            var pinky = hand.Pinky;
-            ConvertMagicLeapKeyPoint(pinky.Tip, TrackedHandJoint.PinkyTip);
-            ConvertMagicLeapKeyPoint(pinky.MCP, TrackedHandJoint.PinkyKnuckle);
+            { BoneId.Hand_Thumb1, TrackedHandJoint.ThumbMetacarpalJoint },
+            { BoneId.Hand_Thumb2, TrackedHandJoint.ThumbProximalJoint },
+            { BoneId.Hand_Thumb3, TrackedHandJoint.ThumbDistalJoint },
+            { BoneId.Hand_ThumbTip, TrackedHandJoint.ThumbTip },
+            { BoneId.Hand_Index1, TrackedHandJoint.IndexKnuckle },
+            { BoneId.Hand_Index2, TrackedHandJoint.IndexMiddleJoint },
+            { BoneId.Hand_Index3, TrackedHandJoint.IndexDistalJoint },
+            { BoneId.Hand_IndexTip, TrackedHandJoint.IndexTip },
+            { BoneId.Hand_Middle1, TrackedHandJoint.MiddleKnuckle },
+            { BoneId.Hand_Middle2, TrackedHandJoint.MiddleMiddleJoint },
+            { BoneId.Hand_Middle3, TrackedHandJoint.MiddleDistalJoint },
+            { BoneId.Hand_MiddleTip, TrackedHandJoint.MiddleTip },
+            { BoneId.Hand_Ring1, TrackedHandJoint.RingKnuckle },
+            { BoneId.Hand_Ring2, TrackedHandJoint.RingMiddleJoint },
+            { BoneId.Hand_Ring3, TrackedHandJoint.RingDistalJoint },
+            { BoneId.Hand_RingTip, TrackedHandJoint.RingTip },
+            { BoneId.Hand_Pinky1, TrackedHandJoint.PinkyKnuckle },
+            { BoneId.Hand_Pinky2, TrackedHandJoint.PinkyMiddleJoint },
+            { BoneId.Hand_Pinky3, TrackedHandJoint.PinkyDistalJoint },
+            { BoneId.Hand_PinkyTip, TrackedHandJoint.PinkyTip },
+            { BoneId.Hand_WristRoot, TrackedHandJoint.Wrist },
+        };
 
-            var ring = hand.Ring;
-            ConvertMagicLeapKeyPoint(ring.Tip, TrackedHandJoint.RingTip);
-            ConvertMagicLeapKeyPoint(ring.MCP, TrackedHandJoint.RingKnuckle);
+        protected void UpdateHandData(OVRHand ovrHand, OVRSkeleton ovrSkeleton)
+        {
+            if (ovrSkeleton != null)
+            {
+                var bones = ovrSkeleton.Bones;
+                foreach (var bone in bones)
+                {
+                    UpdateBone(bone);
+                }
 
-            var middle = hand.Middle;
-            ConvertMagicLeapKeyPoint(middle.Tip, TrackedHandJoint.MiddleTip);
-            ConvertMagicLeapKeyPoint(middle.PIP, TrackedHandJoint.MiddleMiddleJoint);
-            ConvertMagicLeapKeyPoint(middle.MCP, TrackedHandJoint.MiddleKnuckle);
-
-            var index = hand.Index;
-            ConvertMagicLeapKeyPoint(index.Tip, TrackedHandJoint.IndexTip);
-            ConvertMagicLeapKeyPoint(index.PIP, TrackedHandJoint.IndexMiddleJoint);
-            ConvertMagicLeapKeyPoint(index.MCP, TrackedHandJoint.IndexKnuckle);
-
-            var thumb = hand.Thumb;
-            ConvertMagicLeapKeyPoint(thumb.Tip, TrackedHandJoint.ThumbTip);
-            ConvertMagicLeapKeyPoint(thumb.IP, TrackedHandJoint.ThumbDistalJoint);
-            ConvertMagicLeapKeyPoint(thumb.MCP, TrackedHandJoint.ThumbProximalJoint);
-
-            var wrist = hand.Wrist;
-            ConvertMagicLeapKeyPoint(wrist.Center, TrackedHandJoint.Wrist);
-
-            UpdateJointPose(TrackedHandJoint.Palm, hand.Center, Quaternion.identity);
+                UpdatePalm(bones);
+            }
 
             CoreServices.InputSystem?.RaiseHandJointsUpdated(InputSource, ControllerHandedness, jointPoses);
 
-            // Check pinching action
-            var keyPose = hand.KeyPose;
-            var confidence = hand.KeyPoseConfidence;
+            IsPinching = ovrHand.GetFingerIsPinching(OVRHand.HandFinger.Index);
+        }
 
-            if (confidence > KeyPoseConfidenceThreshold && (keyPose == MLHandKeyPose.Pinch || keyPose == MLHandKeyPose.Fist))
+        protected void UpdateBone(OVRBone bone)
+        {
+            var boneId = bone.Id;
+            var boneTransform = bone.Transform;
+
+            if (boneJointMapping.TryGetValue(boneId, out var joint))
             {
-                IsPinching = true;
-            }
-            else
-            {
-                IsPinching = false;
+                UpdateJointPose(joint, boneTransform.position, boneTransform.rotation);
             }
         }
 
-        protected void ConvertMagicLeapKeyPoint(MLKeyPoint keyPoint, TrackedHandJoint joint)
+        protected void UpdatePalm(IList<OVRBone> bones)
         {
-            if (keyPoint.IsValid) {
-                var position = keyPoint.Position;
-                UpdateJointPose(joint, position, Quaternion.identity);
+            var wristRoot = bones.FirstOrDefault(x => x.Id == BoneId.Hand_WristRoot);
+            var middle3 = bones.FirstOrDefault(x => x.Id == BoneId.Hand_Middle3);
+            if (wristRoot != null && middle3 != null)
+            {
+                var wristRootPosition = wristRoot.Transform.position;
+                var middle3Position = middle3.Transform.position;
+                var palmPosition = Vector3.Lerp(wristRootPosition, middle3Position, 0.5f);
+                var palmRotation = wristRoot.Transform.rotation;
+                UpdateJointPose(TrackedHandJoint.Palm, palmPosition, palmRotation);
             }
         }
 
@@ -246,9 +263,10 @@ namespace HoloLab.MixedReality.Toolkit.OculusQuestInput
             }
         }
 
-        private void UpdateIndexFingerData(MLHand hand, MixedRealityInteractionMapping interactionMapping)
+        private void UpdateIndexFingerData(MixedRealityInteractionMapping interactionMapping)
         {
-            if(jointPoses.TryGetValue(TrackedHandJoint.IndexTip, out var pose)){
+            if (jointPoses.TryGetValue(TrackedHandJoint.IndexTip, out var pose))
+            {
                 currentIndexPose.Rotation = pose.Rotation;
                 currentIndexPose.Position = pose.Position;
             }
@@ -259,8 +277,9 @@ namespace HoloLab.MixedReality.Toolkit.OculusQuestInput
             if (interactionMapping.Changed)
             {
                 // Raise input system Event if it enabled
-                InputSystem?.RaisePoseInputChanged(InputSource, ControllerHandedness, interactionMapping.MixedRealityInputAction, currentIndexPose);
+                CoreServices.InputSystem?.RaisePoseInputChanged(InputSource, ControllerHandedness, interactionMapping.MixedRealityInputAction, currentIndexPose);
             }
         }
+        #endregion
     }
 }

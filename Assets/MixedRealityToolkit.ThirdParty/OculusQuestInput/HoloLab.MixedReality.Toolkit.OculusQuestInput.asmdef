@@ -1,6 +1,9 @@
 {
     "name": "HoloLab.MixedReality.Toolkit.OculusQuestInput",
-    "references": [],
+    "references": [
+        "Microsoft.MixedReality.Toolkit",
+        "Oculus.VR"
+    ],
     "optionalUnityReferences": [],
     "includePlatforms": [
         "Android",
