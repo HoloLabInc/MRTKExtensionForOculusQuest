@@ -232,22 +232,21 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
                 var palmPosition = Vector3.Lerp(wristRootPosition, middle3Position, 0.5f);
                 var palmRotation = wristRoot.Transform.rotation;
 
-
                 // WARNING THIS CODE IS SUBJECT TO CHANGE WITH THE OCULUS SDK - This fix is a hack to fix broken rotations for palms
-
                 if (ControllerHandedness == Handedness.Left)
                 {
                     // Rotate palm 180 on X to flip up
                     palmRotation *= Quaternion.Euler(180f, 0f, 0f);
 
-                    // Rotate palm 90 degrees on y to align z with forward
-                    //palmRotation *= Quaternion.Euler(0f, 90f, 0f);
+                    // Rotate palm 90 degrees on y to align x with right
+                    palmRotation *= Quaternion.Euler(0f, 90f, 0f);
                 }
-                // Right Up direction is correct
                 else
                 {
-                    // Rotate palm 90 degrees on y to align z with forward
-                    //palmRotation *= Quaternion.Euler(0f, 90f, 0f);
+                    // Right Up direction is correct
+                    
+                    // Rotate palm 90 degrees on y to align x with right
+                    palmRotation *= Quaternion.Euler(0f, -90f, 0f);
                 }
                 UpdateJointPose(TrackedHandJoint.Palm, palmPosition, palmRotation);
             }

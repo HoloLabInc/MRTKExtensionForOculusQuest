@@ -19,9 +19,22 @@ namespace prvncher.MixedReality.Toolkit.Debug
         void LateUpdate()
         {
             IMixedRealityHand hand = GetController(trackedHandedness) as IMixedRealityHand;
-            if(hand == null || !hand.TryGetJoint(trackedJoint, out MixedRealityPose pose)) return;
+            if (hand == null || !hand.TryGetJoint(trackedJoint, out MixedRealityPose pose))
+            {
+                SetChildrenActive(false);
+                return;
+            }
+            SetChildrenActive(true);
             transform.position = pose.Position;
             transform.rotation = pose.Rotation;
+        }
+
+        private void SetChildrenActive(bool isActive)
+        {
+            foreach (Transform child in transform)
+            {
+                child.gameObject.SetActive(isActive);
+            }
         }
 
         private static IMixedRealityController GetController(Handedness handedness)
