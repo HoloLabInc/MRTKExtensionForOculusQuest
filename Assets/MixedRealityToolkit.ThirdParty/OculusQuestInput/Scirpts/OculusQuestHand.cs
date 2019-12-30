@@ -20,13 +20,16 @@ namespace HoloLab.MixedReality.Toolkit.OculusQuestInput
 
         private Vector3 currentPointerPosition = Vector3.zero;
         private Quaternion currentPointerRotation = Quaternion.identity;
-        private MixedRealityPose lastPointerPose = MixedRealityPose.ZeroIdentity;
         private MixedRealityPose currentPointerPose = MixedRealityPose.ZeroIdentity;
+
+        /// <summary>
+        /// Pose used by hand ray
+        /// </summary>
+        public MixedRealityPose HandPointerPose => currentPointerPose;
+
         private MixedRealityPose currentIndexPose = MixedRealityPose.ZeroIdentity;
         private MixedRealityPose currentGripPose = MixedRealityPose.ZeroIdentity;
         private MixedRealityPose lastGripPose = MixedRealityPose.ZeroIdentity;
-
-        private readonly HandRay handRay = new HandRay();
 
         // TODO: Hand mesh
         // private int[] handMeshTriangleIndices = null;
@@ -89,7 +92,6 @@ namespace HoloLab.MixedReality.Toolkit.OculusQuestInput
 
             UpdateHandData(hand, ovrSkeleton);
 
-            lastPointerPose = currentPointerPose;
             lastGripPose = currentGripPose;
 
             Vector3 pointerPosition = jointPoses[TrackedHandJoint.Palm].Position;
@@ -97,12 +99,9 @@ namespace HoloLab.MixedReality.Toolkit.OculusQuestInput
 
             if (IsPositionAvailable)
             {
-                handRay.Update(pointerPosition, GetPalmNormal(), CameraCache.Main.transform, ControllerHandedness);
-
-                Ray ray = handRay.Ray;
-
-                currentPointerPose.Position = ray.origin;
-                currentPointerPose.Rotation = Quaternion.LookRotation(ray.direction);
+                // Leverage Oculus Platform Hand Ray - instead of simulating it in a crummy way
+                currentPointerPose.Position = hand.PointerPose.position;
+                currentPointerPose.Rotation = hand.PointerPose.rotation;
 
                 currentGripPose = jointPoses[TrackedHandJoint.Palm];
             }
