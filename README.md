@@ -9,7 +9,7 @@ My fork will have some improvements over @tarukosu's original repo. I will list 
 # Supported versions
 - Unity 2018.4.x (Currently targetting 2018.4.14f1)
 - Oculus Integration 12.0
-- Mixed Reality Toolkit v2.2.0
+- Mixed Reality Toolkit v2.2.0 (This fork is built targetting an MRTK fork branched off the latest development branch)
 
 # Getting started with my fork
 ## 1. Clone this repo
