@@ -129,17 +129,19 @@ namespace HoloLab.MixedReality.Toolkit.OculusQuestInput
             // Add new hand
             var pointers = RequestPointers(SupportedControllerType.ArticulatedHand, handedness);
             var inputSourceType = InputSourceType.Hand;
-            var inputSource = InputSystem?.RequestNewGenericInputSource($"Oculus Quest {handedness} Hand", pointers, inputSourceType);
+
+            IMixedRealityInputSystem inputSystem = Service as IMixedRealityInputSystem;
+            var inputSource = inputSystem?.RequestNewGenericInputSource($"Oculus Quest {handedness} Hand", pointers, inputSourceType);
 
             var controller = new OculusQuestHand(TrackingState.Tracked, handedness, inputSource);
-            controller.SetupConfiguration(typeof(OculusQuestHand), inputSourceType);
+            controller.SetupConfiguration(typeof(OculusQuestHand));
 
             for (int i = 0; i < controller.InputSource?.Pointers?.Length; i++)
             {
                 controller.InputSource.Pointers[i].Controller = controller;
             }
 
-            InputSystem?.RaiseSourceDetected(controller.InputSource, controller);
+            inputSystem?.RaiseSourceDetected(controller.InputSource, controller);
 
             trackedHands.Add(handedness, controller);
 
