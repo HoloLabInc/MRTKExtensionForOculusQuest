@@ -16,8 +16,16 @@ My fork will have some improvements over @tarukosu's original repo. I will list 
 Clone this repository, and then make sure to initialize submodules. (Command-line - (git submodule init - git submodule update)).
 This will clone my MRTK fork as well, which I use for developing new features on that repo.
 
-## 2. Import Oculus Integration
+## 2. Run SymLink bat
+Run bat External/createSymlink.bat by double clicking it.
+This will link the MRTK folders cloned via the submodule into the project.
+
+## 3. Import Oculus Integration
 Download Oculus Integration 12.0 from Asset Store and import it.
+- Alternatively just drag and drop the Oculus folder into Assets/
+
+## 4. Ignore the MRTK project configuration window
+This window will attempt to add MSBuild to your manifest.json, and this may well cause build issues. Ignore it for now.
 
 # Getting Started on new project (No release packages yet - this applies to @tarukosu's original repo)
 ## 1. Import Oculus Integration
