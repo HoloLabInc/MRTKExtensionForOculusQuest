@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace HoloLab.MixedReality.Toolkit.OculusQuestInput
+namespace prvncher.MixedReality.Toolkit.OculusQuestInput
 {
     /// <summary>
     /// Manages Oculus Quest Hand Inputs

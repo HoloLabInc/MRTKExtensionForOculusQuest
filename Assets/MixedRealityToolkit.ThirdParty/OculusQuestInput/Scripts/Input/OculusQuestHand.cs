@@ -7,7 +7,7 @@ using System.Linq;
 using UnityEngine;
 using static OVRSkeleton;
 
-namespace HoloLab.MixedReality.Toolkit.OculusQuestInput
+namespace prvncher.MixedReality.Toolkit.OculusQuestInput
 {
     [MixedRealityController(
         SupportedControllerType.ArticulatedHand,
@@ -29,7 +29,6 @@ namespace HoloLab.MixedReality.Toolkit.OculusQuestInput
 
         private MixedRealityPose currentIndexPose = MixedRealityPose.ZeroIdentity;
         private MixedRealityPose currentGripPose = MixedRealityPose.ZeroIdentity;
-        private MixedRealityPose lastGripPose = MixedRealityPose.ZeroIdentity;
 
         // TODO: Hand mesh
         // private int[] handMeshTriangleIndices = null;
@@ -68,16 +67,18 @@ namespace HoloLab.MixedReality.Toolkit.OculusQuestInput
         {
             get
             {
-                return true;
+                if (!TryGetJoint(TrackedHandJoint.Palm, out var palmPose)) return false;
+
+                Transform cameraTransform = CameraCache.Main.transform;
+
+                Vector3 projectedPalmUp = Vector3.ProjectOnPlane(-palmPose.Up, cameraTransform.up);
+                
+                // We check if the palm forward is roughly in line with the camera lookAt
+                return Vector3.Dot(cameraTransform.forward, projectedPalmUp) > 0.3f;
             }
         }
 
         protected bool IsPinching { set; get; }
-
-        protected Vector3 GetPalmNormal()
-        {
-            return -Vector3.up;
-        }
 
         /// <summary>
         /// Update the controller data from the provided platform state
@@ -85,41 +86,27 @@ namespace HoloLab.MixedReality.Toolkit.OculusQuestInput
         /// <param name="interactionSourceState">The InteractionSourceState retrieved from the platform</param>
         public void UpdateController(OVRHand hand, OVRSkeleton ovrSkeleton)
         {
-            if (!Enabled)
+            if (!Enabled || hand == null || ovrSkeleton == null)
             {
                 return;
             }
 
             UpdateHandData(hand, ovrSkeleton);
 
-            lastGripPose = currentGripPose;
+            IsPositionAvailable = hand.IsTracked;
 
-            Vector3 pointerPosition = jointPoses[TrackedHandJoint.Palm].Position;
-            IsPositionAvailable = IsRotationAvailable = pointerPosition != Vector3.zero;
+            bool isTracked = hand.IsTracked;
+            IsPositionAvailable = IsRotationAvailable = isTracked;
 
-            if (IsPositionAvailable)
+            if (isTracked)
             {
                 // Leverage Oculus Platform Hand Ray - instead of simulating it in a crummy way
                 currentPointerPose.Position = hand.PointerPose.position;
                 currentPointerPose.Rotation = hand.PointerPose.rotation;
 
-                currentGripPose = jointPoses[TrackedHandJoint.Palm];
-            }
+                currentGripPose = jointPoses[TrackedHandJoint.Wrist];
 
-            if (lastGripPose != currentGripPose)
-            {
-                if (IsPositionAvailable && IsRotationAvailable)
-                {
-                    CoreServices.InputSystem?.RaiseSourcePoseChanged(InputSource, this, currentGripPose);
-                }
-                else if (IsPositionAvailable && !IsRotationAvailable)
-                {
-                    CoreServices.InputSystem?.RaiseSourcePositionChanged(InputSource, this, currentPointerPosition);
-                }
-                else if (!IsPositionAvailable && IsRotationAvailable)
-                {
-                    CoreServices.InputSystem?.RaiseSourceRotationChanged(InputSource, this, currentPointerRotation);
-                }
+                CoreServices.InputSystem?.RaiseSourcePoseChanged(InputSource, this, currentGripPose);
             }
 
             for (int i = 0; i < Interactions?.Length; i++)
@@ -244,6 +231,24 @@ namespace HoloLab.MixedReality.Toolkit.OculusQuestInput
                 var middle3Position = middle3.Transform.position;
                 var palmPosition = Vector3.Lerp(wristRootPosition, middle3Position, 0.5f);
                 var palmRotation = wristRoot.Transform.rotation;
+
+
+                // WARNING THIS CODE IS SUBJECT TO CHANGE WITH THE OCULUS SDK - This fix is a hack to fix broken rotations for palms
+
+                if (ControllerHandedness == Handedness.Left)
+                {
+                    // Rotate palm 180 on X to flip up
+                    palmRotation *= Quaternion.Euler(180f, 0f, 0f);
+
+                    // Rotate palm 90 degrees on y to align z with forward
+                    //palmRotation *= Quaternion.Euler(0f, 90f, 0f);
+                }
+                // Right Up direction is correct
+                else
+                {
+                    // Rotate palm 90 degrees on y to align z with forward
+                    //palmRotation *= Quaternion.Euler(0f, 90f, 0f);
+                }
                 UpdateJointPose(TrackedHandJoint.Palm, palmPosition, palmRotation);
             }
         }

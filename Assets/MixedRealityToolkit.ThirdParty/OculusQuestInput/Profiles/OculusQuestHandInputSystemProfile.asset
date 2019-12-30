@@ -91,8 +91,8 @@ MonoBehaviour:
     runtimePlatform: 208
     deviceManagerProfile: {fileID: 0}
   - componentType:
-      reference: HoloLab.MixedReality.Toolkit.OculusQuestInput.OculusQuestHandInputManager,
-        HoloLab.MixedReality.Toolkit.OculusQuestInput
+      reference: prvncher.MixedReality.Toolkit.OculusQuestInput.OculusQuestHandInputManager,
+        prvncher.MixedReality.Toolkit.OculusQuestInput
     componentName: Oculus Quest Hand Input Manager
     priority: 0
     runtimePlatform: 240
