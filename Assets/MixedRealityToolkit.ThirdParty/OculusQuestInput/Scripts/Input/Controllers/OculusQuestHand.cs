@@ -20,6 +20,10 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
         private MixedRealityPose currentIndexPose = MixedRealityPose.ZeroIdentity;
         private MixedRealityPose currentGripPose = MixedRealityPose.ZeroIdentity;
 
+        // Use Kalman filters to improve palm and index positions, as they drive many interactions
+        private KalmanFilterVector3 palmFilter = new KalmanFilterVector3();
+        private KalmanFilterVector3 indexTipFilter = new KalmanFilterVector3();
+
         // TODO: Hand mesh
         // private int[] handMeshTriangleIndices = null;
         // private Vector2[] handMeshUVs;
@@ -239,12 +243,13 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
 
             if (hasMiddleKnuckle && hasWrist)
             {
-                var wristRootPosition = wristPose.Position;
-                var middle3Position = middleKnucklePose.Position;
-                var palmPosition = Vector3.Lerp(wristRootPosition, middle3Position, 0.5f);
-                var palmRotation = wristPose.Rotation;
+                Vector3 wristRootPosition = wristPose.Position;
+                Vector3 middle3Position = middleKnucklePose.Position;
 
-                UpdateJointPose(TrackedHandJoint.Palm, palmPosition, palmRotation);
+                Vector3 filteredPalm = palmFilter.Update(Vector3.Lerp(wristRootPosition, middle3Position, 0.5f));
+                Quaternion palmRotation = wristPose.Rotation;
+
+                UpdateJointPose(TrackedHandJoint.Palm, filteredPalm, palmRotation);
             }
         }
 
@@ -267,7 +272,9 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
             if (jointPoses.TryGetValue(TrackedHandJoint.IndexTip, out var pose))
             {
                 currentIndexPose.Rotation = pose.Rotation;
-                currentIndexPose.Position = pose.Position;
+
+                // Filter index tip before submitting it to the pose
+                currentIndexPose.Position = indexTipFilter.Update(pose.Position);
             }
 
             interactionMapping.PoseData = currentIndexPose;
