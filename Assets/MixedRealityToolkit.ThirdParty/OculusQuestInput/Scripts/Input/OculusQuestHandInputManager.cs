@@ -1,7 +1,6 @@
 ﻿using Microsoft.MixedReality.Toolkit;
 using Microsoft.MixedReality.Toolkit.Input;
 using Microsoft.MixedReality.Toolkit.Utilities;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -11,10 +10,7 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
     /// <summary>
     /// Manages Oculus Quest Hand Inputs
     /// </summary>
-    [MixedRealityDataProvider(
-        typeof(IMixedRealityInputSystem),
-        SupportedPlatforms.Android | SupportedPlatforms.WindowsEditor | SupportedPlatforms.MacEditor | SupportedPlatforms.LinuxEditor,
-        "Oculus Quest Hand Input Manager")]
+    [MixedRealityDataProvider(typeof(IMixedRealityInputSystem), SupportedPlatforms.Android | SupportedPlatforms.WindowsEditor | SupportedPlatforms.MacEditor | SupportedPlatforms.LinuxEditor, "Oculus Quest Hand Input Manager")]
     public class OculusQuestHandInputManager : BaseInputDeviceManager, IMixedRealityCapabilityCheck
     {
         private Dictionary<Handedness, OculusQuestHand> trackedHands = new Dictionary<Handedness, OculusQuestHand>();

@@ -1,25 +1,15 @@
 ﻿using Microsoft.MixedReality.Toolkit;
 using Microsoft.MixedReality.Toolkit.Input;
 using Microsoft.MixedReality.Toolkit.Utilities;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using static OVRSkeleton;
 
 namespace prvncher.MixedReality.Toolkit.OculusQuestInput
 {
-    [MixedRealityController(
-        SupportedControllerType.ArticulatedHand,
-        new[] { Handedness.Left, Handedness.Right })]
+    [MixedRealityController(SupportedControllerType.ArticulatedHand, new[] { Handedness.Left, Handedness.Right })]
     public class OculusQuestHand : BaseController, IMixedRealityHand
     {
-        protected Vector3 CurrentControllerPosition = Vector3.zero;
-        protected Quaternion CurrentControllerRotation = Quaternion.identity;
-        protected MixedRealityPose CurrentControllerPose = MixedRealityPose.ZeroIdentity;
-
-        private Vector3 currentPointerPosition = Vector3.zero;
-        private Quaternion currentPointerRotation = Quaternion.identity;
         private MixedRealityPose currentPointerPose = MixedRealityPose.ZeroIdentity;
 
         /// <summary>
@@ -104,7 +94,7 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
                 currentPointerPose.Position = hand.PointerPose.position;
                 currentPointerPose.Rotation = hand.PointerPose.rotation;
 
-                currentGripPose = jointPoses[TrackedHandJoint.Wrist];
+                currentGripPose = jointPoses[TrackedHandJoint.Palm];
 
                 CoreServices.InputSystem?.RaiseSourcePoseChanged(InputSource, this, currentGripPose);
             }
@@ -202,12 +192,14 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
                     UpdateBone(bone);
                 }
 
-                UpdatePalm(bones);
+                UpdatePalm();
             }
 
             CoreServices.InputSystem?.RaiseHandJointsUpdated(InputSource, ControllerHandedness, jointPoses);
 
-            IsPinching = ovrHand.GetFingerIsPinching(OVRHand.HandFinger.Index);
+            // Only consider pinching if finger confidence is high
+            IsPinching = ovrHand.GetFingerIsPinching(OVRHand.HandFinger.Index) 
+                         && ovrHand.GetFingerConfidence(OVRHand.HandFinger.Index) == OVRHand.TrackingConfidence.High;
         }
 
         protected void UpdateBone(OVRBone bone)
@@ -217,37 +209,41 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
 
             if (boneJointMapping.TryGetValue(boneId, out var joint))
             {
-                UpdateJointPose(joint, boneTransform.position, boneTransform.rotation);
-            }
-        }
+                Quaternion boneRotation = bone.Transform.rotation;
 
-        protected void UpdatePalm(IList<OVRBone> bones)
-        {
-            var wristRoot = bones.FirstOrDefault(x => x.Id == BoneId.Hand_WristRoot);
-            var middle3 = bones.FirstOrDefault(x => x.Id == BoneId.Hand_Middle3);
-            if (wristRoot != null && middle3 != null)
-            {
-                var wristRootPosition = wristRoot.Transform.position;
-                var middle3Position = middle3.Transform.position;
-                var palmPosition = Vector3.Lerp(wristRootPosition, middle3Position, 0.5f);
-                var palmRotation = wristRoot.Transform.rotation;
-
-                // WARNING THIS CODE IS SUBJECT TO CHANGE WITH THE OCULUS SDK - This fix is a hack to fix broken rotations for palms
+                // WARNING THIS CODE IS SUBJECT TO CHANGE WITH THE OCULUS SDK - This fix is a hack to fix broken and inconsistent rotations for hands
                 if (ControllerHandedness == Handedness.Left)
                 {
                     // Rotate palm 180 on X to flip up
-                    palmRotation *= Quaternion.Euler(180f, 0f, 0f);
+                    boneRotation *= Quaternion.Euler(180f, 0f, 0f);
 
                     // Rotate palm 90 degrees on y to align x with right
-                    palmRotation *= Quaternion.Euler(0f, 90f, 0f);
+                    boneRotation *= Quaternion.Euler(0f, 90f, 0f);
                 }
                 else
                 {
                     // Right Up direction is correct
-                    
+
                     // Rotate palm 90 degrees on y to align x with right
-                    palmRotation *= Quaternion.Euler(0f, -90f, 0f);
+                    boneRotation *= Quaternion.Euler(0f, -90f, 0f);
                 }
+
+                UpdateJointPose(joint, boneTransform.position, boneRotation);
+            }
+        }
+
+        protected void UpdatePalm()
+        {
+            bool hasMiddleKnuckle = TryGetJoint(TrackedHandJoint.MiddleKnuckle, out var middleKnucklePose);
+            bool hasWrist = TryGetJoint(TrackedHandJoint.Wrist, out var wristPose);
+
+            if (hasMiddleKnuckle && hasWrist)
+            {
+                var wristRootPosition = wristPose.Position;
+                var middle3Position = middleKnucklePose.Position;
+                var palmPosition = Vector3.Lerp(wristRootPosition, middle3Position, 0.5f);
+                var palmRotation = wristPose.Rotation;
+
                 UpdateJointPose(TrackedHandJoint.Palm, palmPosition, palmRotation);
             }
         }
