@@ -10,7 +10,7 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
     /// <summary>
     /// Manages Oculus Quest Hand Inputs
     /// </summary>
-    [MixedRealityDataProvider(typeof(IMixedRealityInputSystem), SupportedPlatforms.Android | SupportedPlatforms.WindowsEditor | SupportedPlatforms.MacEditor | SupportedPlatforms.LinuxEditor, "Oculus Quest Hand Input Manager")]
+    [MixedRealityDataProvider(typeof(IMixedRealityInputSystem), SupportedPlatforms.Android | SupportedPlatforms.WindowsEditor | SupportedPlatforms.MacEditor | SupportedPlatforms.LinuxEditor, "Oculus Quest Input Manager")]
     public class OculusQuestInputManager : BaseInputDeviceManager, IMixedRealityCapabilityCheck
     {
         private Dictionary<Handedness, OculusQuestHand> trackedHands = new Dictionary<Handedness, OculusQuestHand>();
@@ -119,7 +119,7 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
         protected void UpdateControllers()
         {
             UpdateController(OVRInput.Controller.LTouch, Handedness.Left);
-            UpdateController(OVRInput.Controller.RTouch, Handedness.Left);
+            UpdateController(OVRInput.Controller.RTouch, Handedness.Right);
         }
 
         protected void UpdateController(OVRInput.Controller controller, Handedness handedness)
@@ -142,9 +142,8 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
                 return trackedControllers[handedness];
             }
 
-            // Add new hand
-            var pointers = RequestPointers(SupportedControllerType.OculusTouch, handedness);
-            var inputSourceType = InputSourceType.Controller;
+            var pointers = RequestPointers(SupportedControllerType.ArticulatedHand, handedness);
+            var inputSourceType = InputSourceType.Hand;
 
             IMixedRealityInputSystem inputSystem = Service as IMixedRealityInputSystem;
             var inputSource = inputSystem?.RequestNewGenericInputSource($"Oculus Quest {handedness} Controller", pointers, inputSourceType);

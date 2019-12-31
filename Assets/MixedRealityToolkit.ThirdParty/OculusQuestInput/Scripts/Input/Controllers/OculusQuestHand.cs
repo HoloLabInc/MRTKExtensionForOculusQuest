@@ -31,6 +31,8 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
         public OculusQuestHand(TrackingState trackingState, Handedness controllerHandedness, IMixedRealityInputSource inputSource = null, MixedRealityInteractionMapping[] interactions = null)
             : base(trackingState, controllerHandedness, inputSource, interactions)
         {
+            palmFilter.Reset();
+            indexTipFilter.Reset();
         }
 
         public override MixedRealityInteractionMapping[] DefaultInteractions => new[]
@@ -201,9 +203,18 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
 
             CoreServices.InputSystem?.RaiseHandJointsUpdated(InputSource, ControllerHandedness, jointPoses);
 
-            // Only consider pinching if finger confidence is high
-            IsPinching = ovrHand.GetFingerIsPinching(OVRHand.HandFinger.Index) 
-                         && ovrHand.GetFingerConfidence(OVRHand.HandFinger.Index) == OVRHand.TrackingConfidence.High;
+
+            if (IsPinching)
+            {
+                // If we are already pinching, we make the pinch a bit sticky
+                IsPinching = ovrHand.GetFingerPinchStrength(OVRHand.HandFinger.Index) > 0.85f;
+            }
+            else
+            {
+                // If not yet pinching, only consider pinching if finger confidence is high
+                IsPinching = ovrHand.GetFingerIsPinching(OVRHand.HandFinger.Index)
+                             && ovrHand.GetFingerConfidence(OVRHand.HandFinger.Index) == OVRHand.TrackingConfidence.High;
+            }
         }
 
         protected void UpdateBone(OVRBone bone)
@@ -246,17 +257,30 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
                 Vector3 wristRootPosition = wristPose.Position;
                 Vector3 middle3Position = middleKnucklePose.Position;
 
-                Vector3 filteredPalm = palmFilter.Update(Vector3.Lerp(wristRootPosition, middle3Position, 0.5f));
+                Vector3 palmPosition = Vector3.Lerp(wristRootPosition, middle3Position, 0.5f);
                 Quaternion palmRotation = wristPose.Rotation;
 
-                UpdateJointPose(TrackedHandJoint.Palm, filteredPalm, palmRotation);
+                UpdateJointPose(TrackedHandJoint.Palm, palmPosition, palmRotation);
             }
         }
 
         protected void UpdateJointPose(TrackedHandJoint joint, Vector3 position, Quaternion rotation)
         {
-            var pose = new MixedRealityPose(position, rotation);
+            Vector3 jointPosition = position;
+            
+            // TODO Figure out kalman filter coefficients to get good quality smoothing
+            /*
+            if (joint == TrackedHandJoint.IndexTip)
+            {
+                jointPosition = indexTipFilter.Update(position);
+            }
+            else if (joint == TrackedHandJoint.Palm)
+            {
+                jointPosition = palmFilter.Update(position);
+            }
+            */
 
+            MixedRealityPose pose = new MixedRealityPose(jointPosition, rotation);
             if (!jointPoses.ContainsKey(joint))
             {
                 jointPoses.Add(joint, pose);
@@ -272,9 +296,7 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
             if (jointPoses.TryGetValue(TrackedHandJoint.IndexTip, out var pose))
             {
                 currentIndexPose.Rotation = pose.Rotation;
-
-                // Filter index tip before submitting it to the pose
-                currentIndexPose.Position = indexTipFilter.Update(pose.Position);
+                currentIndexPose.Position = pose.Position;
             }
 
             interactionMapping.PoseData = currentIndexPose;

@@ -6,20 +6,17 @@ using UnityEngine;
 
 namespace prvncher.MixedReality.Toolkit.OculusQuestInput
 {
-    [MixedRealityController(SupportedControllerType.OculusTouch, new[] { Handedness.Left, Handedness.Right })]
-    public class OculusQuestController : BaseController
+    [MixedRealityController(SupportedControllerType.ArticulatedHand, new[] { Handedness.Left, Handedness.Right })]
+    public class OculusQuestController : BaseController, IMixedRealityHand
     {
         private MixedRealityPose currentPointerPose = MixedRealityPose.ZeroIdentity;
-
 
         private MixedRealityPose currentIndexPose = MixedRealityPose.ZeroIdentity;
         private MixedRealityPose currentGripPose = MixedRealityPose.ZeroIdentity;
 
-        private const float cTriggerDeadZone = 0.1f;
+        protected readonly Dictionary<TrackedHandJoint, MixedRealityPose> jointPoses = new Dictionary<TrackedHandJoint, MixedRealityPose>();
 
-        // TODO: Hand mesh
-        // private int[] handMeshTriangleIndices = null;
-        // private Vector2[] handMeshUVs;
+        private const float cTriggerDeadZone = 0.1f;
 
         public OculusQuestController(TrackingState trackingState, Handedness controllerHandedness, IMixedRealityInputSource inputSource = null, MixedRealityInteractionMapping[] interactions = null)
             : base(trackingState, controllerHandedness, inputSource, interactions)
@@ -32,18 +29,11 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
         /// <remarks>A single interaction mapping works for both left and right controllers.</remarks>
         public override MixedRealityInteractionMapping[] DefaultInteractions => new[]
         {
-            new MixedRealityInteractionMapping(0, "Spatial Pointer", AxisType.SixDof, DeviceInputType.SpatialPointer),
-            new MixedRealityInteractionMapping(1, "Spatial Grip", AxisType.SixDof, DeviceInputType.SpatialGrip),
-            new MixedRealityInteractionMapping(2, "Grip Press", AxisType.SingleAxis, DeviceInputType.TriggerPress),
-            new MixedRealityInteractionMapping(3, "Trigger Position", AxisType.SingleAxis, DeviceInputType.Trigger),
-            new MixedRealityInteractionMapping(4, "Trigger Touch", AxisType.Digital, DeviceInputType.TriggerTouch),
-            new MixedRealityInteractionMapping(5, "Trigger Press (Select)", AxisType.Digital, DeviceInputType.Select),
-            new MixedRealityInteractionMapping(6, "Touchpad Position", AxisType.DualAxis, DeviceInputType.Touchpad),
-            new MixedRealityInteractionMapping(7, "Touchpad Touch", AxisType.Digital, DeviceInputType.TouchpadTouch),
-            new MixedRealityInteractionMapping(8, "Touchpad Press", AxisType.Digital, DeviceInputType.TouchpadPress),
-            new MixedRealityInteractionMapping(9, "Menu Press", AxisType.Digital, DeviceInputType.Menu),
-            new MixedRealityInteractionMapping(10, "Thumbstick Position", AxisType.DualAxis, DeviceInputType.ThumbStick),
-            new MixedRealityInteractionMapping(11, "Thumbstick Press", AxisType.Digital, DeviceInputType.ThumbStickPress),
+            new MixedRealityInteractionMapping(0, "Spatial Pointer", AxisType.SixDof, DeviceInputType.SpatialPointer, new MixedRealityInputAction(4, "Pointer Pose", AxisType.SixDof)),
+            new MixedRealityInteractionMapping(1, "Spatial Grip", AxisType.SixDof, DeviceInputType.SpatialGrip, new MixedRealityInputAction(3, "Grip Pose", AxisType.SixDof)),
+            new MixedRealityInteractionMapping(2, "Select", AxisType.Digital, DeviceInputType.Select, new MixedRealityInputAction(1, "Select", AxisType.Digital)),
+            new MixedRealityInteractionMapping(3, "Grab", AxisType.SingleAxis, DeviceInputType.TriggerPress, new MixedRealityInputAction(7, "Grip Press", AxisType.SingleAxis)),
+            new MixedRealityInteractionMapping(4, "Index Finger Pose", AxisType.SixDof, DeviceInputType.IndexFinger,  new MixedRealityInputAction(13, "Index Finger Pose", AxisType.SixDof)),
         };
 
         public override void SetupDefaultInteractions(Handedness controllerHandedness)
@@ -62,8 +52,8 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
                 return;
             }
 
-            IsPositionAvailable = OVRInput.GetControllerPositionTracked(ovrController);
-            IsRotationAvailable = OVRInput.GetControllerPositionTracked(ovrController);
+            IsPositionAvailable = OVRInput.GetControllerPositionValid(ovrController);
+            IsRotationAvailable = OVRInput.GetControllerOrientationValid(ovrController);
 
             Transform playSpaceTransform = ovrRigRoot.transform;
 
@@ -103,6 +93,8 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
             {
                 isTriggerPressed = OVRInput.Get(OVRInput.Axis1D.SecondaryIndexTrigger) > cTriggerDeadZone;
             }
+
+            UpdateJointPoses();
 
             for (int i = 0; i < Interactions?.Length; i++)
             {
@@ -152,8 +144,89 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
                             }
                         }
                         break;
+                    case DeviceInputType.IndexFinger:
+                        UpdateIndexFingerData(Interactions[i]);
+                        break;
                 }
             }
+        }
+
+        private void UpdateJointPoses()
+        {
+            // While we can get pretty much everything done with just the grip pose, we simulate hand sizes for bounds calculations
+
+            // Index
+            Vector3 fingerTipPos = currentGripPose.Position + currentGripPose.Rotation * Vector3.forward * 0.1f;
+            UpdateJointPose(TrackedHandJoint.IndexTip, fingerTipPos, currentGripPose.Rotation);
+
+            // Handed directional offsets
+            Vector3 inWardVector;
+            if (ControllerHandedness == Handedness.Left)
+            {
+                inWardVector = currentGripPose.Rotation * Vector3.right;
+            }
+            else
+            {
+                inWardVector = currentGripPose.Rotation * -Vector3.right;
+            }
+
+            // Thumb
+            Vector3 thumbPose = currentGripPose.Position + inWardVector * 0.04f;
+            UpdateJointPose(TrackedHandJoint.ThumbTip, thumbPose, currentGripPose.Rotation);
+            UpdateJointPose(TrackedHandJoint.ThumbMetacarpalJoint, thumbPose, currentGripPose.Rotation);
+            UpdateJointPose(TrackedHandJoint.ThumbDistalJoint, thumbPose, currentGripPose.Rotation);
+
+            // Pinky
+            Vector3 pinkyPose = currentGripPose.Position - inWardVector * 0.03f;
+            UpdateJointPose(TrackedHandJoint.PinkyKnuckle, pinkyPose, currentGripPose.Rotation);
+
+            // Palm
+            UpdateJointPose(TrackedHandJoint.Palm, currentGripPose.Position, currentGripPose.Rotation);
+
+            // Wrist
+            Vector3 wristPose = currentGripPose.Position - currentGripPose.Rotation * Vector3.forward * 0.05f;
+            UpdateJointPose(TrackedHandJoint.Palm, wristPose, currentGripPose.Rotation);
+        }
+
+        protected void UpdateJointPose(TrackedHandJoint joint, Vector3 position, Quaternion rotation)
+        {
+            MixedRealityPose pose = new MixedRealityPose(position, rotation);
+            if (!jointPoses.ContainsKey(joint))
+            {
+                jointPoses.Add(joint, pose);
+            }
+            else
+            {
+                jointPoses[joint] = pose;
+            }
+        }
+
+        private void UpdateIndexFingerData(MixedRealityInteractionMapping interactionMapping)
+        {
+            if (jointPoses.TryGetValue(TrackedHandJoint.IndexTip, out var pose))
+            {
+                currentIndexPose.Rotation = pose.Rotation;
+                currentIndexPose.Position = pose.Position;
+            }
+
+            interactionMapping.PoseData = currentIndexPose;
+
+            // If our value changed raise it.
+            if (interactionMapping.Changed)
+            {
+                // Raise input system Event if it enabled
+                CoreServices.InputSystem?.RaisePoseInputChanged(InputSource, ControllerHandedness, interactionMapping.MixedRealityInputAction, currentIndexPose);
+            }
+        }
+
+        public bool TryGetJoint(TrackedHandJoint joint, out MixedRealityPose pose)
+        {
+            if (jointPoses.TryGetValue(joint, out pose))
+            {
+                return true;
+            }
+            pose = currentGripPose;
+            return true;
         }
     }
 }
