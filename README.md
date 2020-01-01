@@ -4,7 +4,7 @@ This is a Mixed Reality Toolkit (MRTK) extension for Oculus Quest.
 My fork will have some improvements over @tarukosu's original repo. I will list those out as they come.
 
 ## Demo Video
-[![Demo video](http://img.youtube.com/vi/iefcfgxgOA8/0.jpg)](http://www.youtube.com/watch?v=iefcfgxgOA8)
+[![Demo video](https://i.imgur.com/wWzTaAw.png)](https://twitter.com/prvncher/status/1211768281536847872)
 
 # Supported versions
 - Unity 2018.4.x (Currently targetting 2018.4.14f1)
