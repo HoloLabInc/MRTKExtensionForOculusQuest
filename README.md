@@ -24,8 +24,11 @@ This will link the MRTK folders cloned via the submodule into the project.
 Download Oculus Integration 12.0 from Asset Store and import it.
 - Alternatively just drag and drop the Oculus folder into Assets/
 
-## 4. Ignore the MRTK project configuration window
-This window will attempt to add MSBuild to your manifest.json, and this may well cause build issues. Ignore it for now.
+## 4. Project Configuration Window
+MRTK has a Project Configuration modal window that pops up when you first open a project.
+In this window, there is a checkbox for MSBuild, which will attempt to add MSBuild to your manifest.json that then adds various DLLs to your project via NuGET.
+If like myself, your git folder is not in your drive root, you may run into [errors](https://github.com/microsoft/MixedRealityToolkit-Unity/issues/6972) as I have. For now, it seems that avoiding MSBuild does not raise any problems, but that may change in the future.
+
 
 # Getting Started on new project (No release packages yet - this applies to @tarukosu's original repo)
 ## 1. Import Oculus Integration
