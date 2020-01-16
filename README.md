@@ -1,4 +1,4 @@
-# MRTKExtensionForOculusQeust
+# MRTKExtensionForOculusQuest
 This is Mixed Reality Toolkit (MRTK) extension for Oculus Quest.
 
 ## Demo Video
@@ -17,9 +17,9 @@ Download Oculus Integration 12.0 from Asset Store and import it.
 Download and import MRTK v2 unitypackages.  
 (https://github.com/microsoft/MixedRealityToolkit-Unity/releases)
 
-## 3. Import MRTKExtensionForOculusQeust
-Download and import the latest MRTKExtensionForOculusQeust unitypackage.  
-(https://github.com/HoloLabInc/MRTKExtensionForOculusQeust/releases)
+## 3. Import MRTKExtensionForOculusQuest
+Download and import the latest MRTKExtensionForOculusQuest unitypackage.  
+(https://github.com/HoloLabInc/MRTKExtensionForOculusQuest/releases)
 
 ## Example scene
 The example scenes are under `MixedRealityToolkit.ThirdParty/OculusQuestInput/Scenes`.
