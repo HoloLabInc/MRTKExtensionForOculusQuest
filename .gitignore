@@ -90,3 +90,9 @@ crashlytics-build.properties
 /Assets/MixedRealityToolkit.Tools.meta
 /Assets/MixedRealityToolkit.Generated
 /Assets/MixedRealityToolkit.Generated.meta
+
+MSBuildForUnity.Common.props
+
+Assets/IgnoreExtensions/
+
+Assets/IgnoreExtensions.meta

@@ -1,5 +1,5 @@
 {
-    "name": "HoloLab.MixedReality.Toolkit.OculusQuestInput",
+    "name": "prvncher.MixedReality.Toolkit.OculusQuestInput",
     "references": [
         "Microsoft.MixedReality.Toolkit",
         "Oculus.VR"
