@@ -36,6 +36,10 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
             new MixedRealityInteractionMapping(4, "Index Finger Pose", AxisType.SixDof, DeviceInputType.IndexFinger,  new MixedRealityInputAction(13, "Index Finger Pose", AxisType.SixDof)),
         };
 
+        public override MixedRealityInteractionMapping[] DefaultLeftHandedInteractions => DefaultInteractions;
+
+        public override MixedRealityInteractionMapping[] DefaultRightHandedInteractions => DefaultInteractions;
+
         public override void SetupDefaultInteractions(Handedness controllerHandedness)
         {
             AssignControllerMappings(DefaultInteractions);
