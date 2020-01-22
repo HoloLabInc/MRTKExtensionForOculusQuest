@@ -19,7 +19,7 @@ To do this, open a command line terminal, rooted on the folder you'd like the pr
 
 Then clone using this command "git clone --recurse-submodules https://github.com/provencher/MRTKExtensionForOculusQuest.git"
 
-This will clone my MRTK fork as well, which I use for developing new features on that repo. If you'd like your own version of MRTK, simply remove "--recurse-submodules" from the command, and copy your MRTK files to the External folder, before proceeding to step 2.
+This will the official MRTK development branch as well. If you'd like your own version of MRTK, simply remove "--recurse-submodules" from the command, and copy your MRTK files to the External folder, before proceeding to step 2.
 
 ## 2. Run SymLink bat
 Run bat External/createSymlink.bat by double clicking it.
