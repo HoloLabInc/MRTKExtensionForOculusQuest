@@ -10,7 +10,7 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
     /// <summary>
     /// Manages Oculus Quest Hand Inputs
     /// </summary>
-    [MixedRealityDataProvider(typeof(IMixedRealityInputSystem), SupportedPlatforms.Android | SupportedPlatforms.WindowsEditor | SupportedPlatforms.MacEditor | SupportedPlatforms.LinuxEditor, "Oculus Quest Input Manager")]
+    [MixedRealityDataProvider(typeof(IMixedRealityInputSystem), SupportedPlatforms.Android | SupportedPlatforms.WindowsStandalone, "Oculus Quest Input Manager")]
     public class OculusQuestInputManager : BaseInputDeviceManager, IMixedRealityCapabilityCheck
     {
         private Dictionary<Handedness, OculusQuestHand> trackedHands = new Dictionary<Handedness, OculusQuestHand>();
@@ -76,22 +76,21 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
         {
             base.Disable();
 
-            IMixedRealityInputSystem inputSystem = Service as IMixedRealityInputSystem;
-
-            foreach (var hand in trackedHands)
-            {
-                if (hand.Value != null)
-                {
-                    inputSystem?.RaiseSourceLost(hand.Value.InputSource, hand.Value);
-                }
-            }
-
-            trackedHands.Clear();
+            RemoveAllControllerDevices();
+            RemoveAllHandDevices();
         }
 
         public override IMixedRealityController[] GetActiveControllers()
         {
-            return trackedHands.Values.ToArray<IMixedRealityController>();
+            if (trackedHands.Values.Count > 0)
+            {
+                return trackedHands.Values.ToArray<IMixedRealityController>();
+            }
+            else if(trackedControllers.Values.Count > 0)
+            {
+                return trackedControllers.Values.ToArray<IMixedRealityController>();
+            }
+            return Enumerable.Empty<IMixedRealityController>().ToArray();
         }
 
         /// <inheritdoc />
