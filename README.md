@@ -11,6 +11,10 @@ My fork will have some improvements over @tarukosu's original repo. I will list 
 - Oculus Integration 12.0
 - Mixed Reality Toolkit v2.2.0 (This fork is built targetting an MRTK fork branched off the latest development branch)
 
+# Supported target devices
+- Oculus Rift/S - Windows Standalone
+- Oculus Quest  - Android / Windows Standalone w/ Link
+
 # Getting started with my fork
 ## 1. Clone this repo
 Clone this repository, and then make sure to initialize submodules.
@@ -34,21 +38,6 @@ MRTK has a Project Configuration modal window that pops up when you first open a
 In this window, there is a checkbox for MSBuild, which will attempt to add MSBuild to your manifest.json that then adds various DLLs to your project via NuGET.
 If like myself, your git folder is not in your drive root, you may run into [errors](https://github.com/microsoft/MixedRealityToolkit-Unity/issues/6972) as I have. For now, it seems that avoiding MSBuild does not raise any problems, but that may change in the future.
 
-
-# Getting Started on new project (No release packages yet - this applies to @tarukosu's original repo)
-## 1. Import Oculus Integration
-Download Oculus Integration 12.0 from Asset Store and import it.
-
-## 2. Import MRTK v2
-Download and import MRTK v2 unitypackages.  
-(https://github.com/microsoft/MixedRealityToolkit-Unity/releases)
-
-## 3. Import MRTKExtensionForOculusQuest
-Download and import the latest MRTKExtensionForOculusQuest unitypackage.  
-(https://github.com/HoloLabInc/MRTKExtensionForOculusQuest/releases)
-
-## Example scene
-The example scenes are under `MixedRealityToolkit.ThirdParty/OculusQuestInput/Scenes`.
 
 # Author
 Eric Provencher [@prvncher](https://twitter.com/prvncher)
