@@ -9,6 +9,14 @@ language governing permissions and limitations under the license.
 
 ************************************************************************************/
 
+/*
+  Original:
+  "Oculus/SampleFramework/Usage/HandsTrainExample/Shaders/GradientSkybox.shader"
+
+  Changes:
+  2020-01-24: Andrei Torres: Added support for Single Pass Instanced rendering mode
+*/
+
 Shader "MRTK-Quest/Procedural Gradient Skybox"
 {
   Properties
