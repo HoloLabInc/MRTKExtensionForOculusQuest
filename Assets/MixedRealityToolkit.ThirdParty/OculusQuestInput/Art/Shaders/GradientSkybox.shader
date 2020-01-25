@@ -9,7 +9,7 @@ language governing permissions and limitations under the license.
 
 ************************************************************************************/
 
-Shader "Custom/Procedural Gradient Skybox"
+Shader "MRTK-Quest/Procedural Gradient Skybox"
 {
   Properties
   {
