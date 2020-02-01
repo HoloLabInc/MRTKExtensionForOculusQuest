@@ -22,23 +22,28 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
         private GameObject handIndex1 = null;
         private GameObject handIndex2 = null;
         private GameObject handIndex3 = null;
+        private GameObject handIndexTip = null;
 
         private GameObject handMiddle1 = null;
         private GameObject handMiddle2 = null;
         private GameObject handMiddle3 = null;
+        private GameObject handMiddleTip = null;
 
         private GameObject handRing1 = null;
         private GameObject handRing2 = null;
         private GameObject handRing3 = null;
+        private GameObject handRingTip = null;
 
         private GameObject handPinky0 = null;
         private GameObject handPinky1 = null;
         private GameObject handPinky2 = null;
         private GameObject handPinky3 = null;
+        private GameObject handPinkyTip = null;
 
         private GameObject handThumb1 = null;
         private GameObject handThumb2 = null;
         private GameObject handThumb3 = null;
+        private GameObject handThumbTip = null;
         #endregion
 
         protected readonly Dictionary<TrackedHandJoint, MixedRealityPose> jointPoses = new Dictionary<TrackedHandJoint, MixedRealityPose>();
@@ -105,23 +110,15 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
 
             UpdateJointPoses();
 
-            if (MRTKOculusConfig.Instance.RenderAvatarHandsInsteadOfController)
+            // If not rendering avatar hands, pointer pose is not available, so we approximate it
+            if (IsPositionAvailable)
             {
-                // If rendering avatar hands, we can query the avatar hands for pointer data
-
+                currentPointerPose.Position = currentGripPose.Position = worldPosition;
             }
-            else
-            {
-                // If not rendering avatar hands, pointer pose is not available, so we approximate it
-                if (IsPositionAvailable)
-                {
-                    currentPointerPose.Position = currentGripPose.Position = worldPosition;
-                }
 
-                if (IsRotationAvailable)
-                {
-                    currentPointerPose.Rotation = currentGripPose.Rotation = worldRotation;
-                }
+            if (IsRotationAvailable)
+            {
+                currentPointerPose.Rotation = currentGripPose.Rotation = worldRotation;
             }
 
             // Todo: Complete touch controller mapping
@@ -195,6 +192,9 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
         {
             if (!MRTKOculusConfig.Instance.RenderAvatarHandsInsteadOfController) return false;
 
+            // If we already have a valid hand root, proceed
+            if (handRoot != null) return true;
+
             string handSignififer = ControllerHandedness == Handedness.Left ? "l" : "r";
             string handStructure = "hands:b_" + handSignififer;
 
@@ -206,6 +206,10 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
             if (handRoot == null) return false;
 
             // If we have a hand root match, we look up all other hand joints
+
+            // Wrist
+            string gripString = handStructure + "_grip";
+            handGrip = GameObject.Find(gripString);
 
             // Index
             string indexString = handStructure + "_index";
@@ -219,6 +223,9 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
             string indexString3 = indexString + "3";
             handIndex3 = GameObject.Find(indexString3);
 
+            string indexStringTip = indexString + "_ignore";
+            handIndexTip = GameObject.Find(indexStringTip);
+
             // Middle
             string middleString = handStructure + "_middle";
 
@@ -230,6 +237,9 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
 
             string middleString3 = middleString + "3";
             handMiddle3 = GameObject.Find(middleString3);
+
+            string middleStringTip = middleString + "_ignore";
+            handMiddleTip = GameObject.Find(middleStringTip);
 
             // Pinky
             string pinkyString = handStructure + "_pinky";
@@ -246,6 +256,9 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
             string pinkyString3 = pinkyString + "3";
             handPinky3 = GameObject.Find(pinkyString3);
 
+            string pinkyStringTip = pinkyString + "_ignore";
+            handPinkyTip = GameObject.Find(pinkyStringTip);
+
             // Ring
             string ringString = handStructure + "_ring";
 
@@ -257,6 +270,9 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
 
             string ringString3 = ringString + "3";
             handRing3 = GameObject.Find(ringString3);
+
+            string ringStringTip = ringString + "_ignore";
+            handRingTip = GameObject.Find(ringStringTip);
 
             // Thumb
             string thumbString = handStructure + "_thumb";
@@ -270,59 +286,166 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
             string thumbString3 = thumbString + "3";
             handThumb3 = GameObject.Find(thumbString3);
 
+            string thumStringbTip = thumbString + "_ignore";
+            handThumbTip = GameObject.Find(thumStringbTip);
+
             return true;
         }
 
         private void UpdateJointPoses()
         {
-            if (MRTKOculusConfig.Instance.RenderAvatarHandsInsteadOfController)
+            if (InitializeAvatarHandReferences())
             {
-                // See https://developer.oculus.com/documentation/unity/as-avatars-gsg-unity-mobile/
-                if (ControllerHandedness == Handedness.Left)
-                {
-
-                }
-                else
-                {
-
-                }
+                UpdateAvatarJointPoses();
             }
             else
             {
-                // While we can get pretty much everything done with just the grip pose, we simulate hand sizes for bounds calculations
-
-                // Index
-                Vector3 fingerTipPos = currentGripPose.Position + currentGripPose.Rotation * Vector3.forward * 0.1f;
-                UpdateJointPose(TrackedHandJoint.IndexTip, fingerTipPos, currentGripPose.Rotation);
-
-                // Handed directional offsets
-                Vector3 inWardVector;
-                if (ControllerHandedness == Handedness.Left)
-                {
-                    inWardVector = currentGripPose.Rotation * Vector3.right;
-                }
-                else
-                {
-                    inWardVector = currentGripPose.Rotation * -Vector3.right;
-                }
-
-                // Thumb
-                Vector3 thumbPose = currentGripPose.Position + inWardVector * 0.04f;
-                UpdateJointPose(TrackedHandJoint.ThumbTip, thumbPose, currentGripPose.Rotation);
-                UpdateJointPose(TrackedHandJoint.ThumbMetacarpalJoint, thumbPose, currentGripPose.Rotation);
-                UpdateJointPose(TrackedHandJoint.ThumbDistalJoint, thumbPose, currentGripPose.Rotation);
-
-                // Pinky
-                Vector3 pinkyPose = currentGripPose.Position - inWardVector * 0.03f;
-                UpdateJointPose(TrackedHandJoint.PinkyKnuckle, pinkyPose, currentGripPose.Rotation);
-
-                // Palm
-                UpdateJointPose(TrackedHandJoint.Palm, currentGripPose.Position, currentGripPose.Rotation);
-
-                // Wrist
-                Vector3 wristPose = currentGripPose.Position - currentGripPose.Rotation * Vector3.forward * 0.05f;
-                UpdateJointPose(TrackedHandJoint.Palm, wristPose, currentGripPose.Rotation);
+                UpdateFakeHandJointPoses();
             }
+        }
+
+        private void UpdateAvatarJointPoses()
+        {
+            // Reference
+            /*
+            { BoneId.Hand_Thumb1, TrackedHandJoint.ThumbMetacarpalJoint },
+            { BoneId.Hand_Thumb2, TrackedHandJoint.ThumbProximalJoint },
+            { BoneId.Hand_Thumb3, TrackedHandJoint.ThumbDistalJoint },
+            { BoneId.Hand_ThumbTip, TrackedHandJoint.ThumbTip },
+            { BoneId.Hand_Index1, TrackedHandJoint.IndexKnuckle },
+            { BoneId.Hand_Index2, TrackedHandJoint.IndexMiddleJoint },
+            { BoneId.Hand_Index3, TrackedHandJoint.IndexDistalJoint },
+            { BoneId.Hand_IndexTip, TrackedHandJoint.IndexTip },
+            { BoneId.Hand_Middle1, TrackedHandJoint.MiddleKnuckle },
+            { BoneId.Hand_Middle2, TrackedHandJoint.MiddleMiddleJoint },
+            { BoneId.Hand_Middle3, TrackedHandJoint.MiddleDistalJoint },
+            { BoneId.Hand_MiddleTip, TrackedHandJoint.MiddleTip },
+            { BoneId.Hand_Ring1, TrackedHandJoint.RingKnuckle },
+            { BoneId.Hand_Ring2, TrackedHandJoint.RingMiddleJoint },
+            { BoneId.Hand_Ring3, TrackedHandJoint.RingDistalJoint },
+            { BoneId.Hand_RingTip, TrackedHandJoint.RingTip },
+            { BoneId.Hand_Pinky1, TrackedHandJoint.PinkyKnuckle },
+            { BoneId.Hand_Pinky2, TrackedHandJoint.PinkyMiddleJoint },
+            { BoneId.Hand_Pinky3, TrackedHandJoint.PinkyDistalJoint },
+            { BoneId.Hand_PinkyTip, TrackedHandJoint.PinkyTip },
+            { BoneId.Hand_WristRoot, TrackedHandJoint.Wrist },
+            */
+
+            // Thumb
+            UpdateAvatarJointPose(TrackedHandJoint.ThumbMetacarpalJoint, handThumb1.transform.position, handThumb1.transform.rotation);
+            UpdateAvatarJointPose(TrackedHandJoint.ThumbProximalJoint, handThumb2.transform.position, handThumb2.transform.rotation);
+            UpdateAvatarJointPose(TrackedHandJoint.ThumbDistalJoint, handThumb3.transform.position, handThumb3.transform.rotation);
+            UpdateAvatarJointPose(TrackedHandJoint.ThumbTip, handThumbTip.transform.position, handThumbTip.transform.rotation);
+
+            // Index
+            UpdateAvatarJointPose(TrackedHandJoint.IndexKnuckle, handIndex1.transform.position, handIndex1.transform.rotation);
+            UpdateAvatarJointPose(TrackedHandJoint.IndexMiddleJoint, handIndex2.transform.position, handIndex2.transform.rotation);
+            UpdateAvatarJointPose(TrackedHandJoint.IndexDistalJoint, handIndex3.transform.position, handIndex3.transform.rotation);
+            UpdateAvatarJointPose(TrackedHandJoint.IndexTip, handIndexTip.transform.position, handIndexTip.transform.rotation);
+
+            // Middle
+            UpdateAvatarJointPose(TrackedHandJoint.MiddleKnuckle, handMiddle1.transform.position, handMiddle1.transform.rotation);
+            UpdateAvatarJointPose(TrackedHandJoint.MiddleMiddleJoint, handMiddle2.transform.position, handMiddle2.transform.rotation);
+            UpdateAvatarJointPose(TrackedHandJoint.MiddleDistalJoint, handMiddle3.transform.position, handMiddle3.transform.rotation);
+            UpdateAvatarJointPose(TrackedHandJoint.MiddleTip, handMiddleTip.transform.position, handMiddleTip.transform.rotation);
+
+            // Ring
+            UpdateAvatarJointPose(TrackedHandJoint.RingKnuckle, handRing1.transform.position, handRing1.transform.rotation);
+            UpdateAvatarJointPose(TrackedHandJoint.RingMiddleJoint, handRing2.transform.position, handRing2.transform.rotation);
+            UpdateAvatarJointPose(TrackedHandJoint.RingDistalJoint, handRing3.transform.position, handRing3.transform.rotation);
+            UpdateAvatarJointPose(TrackedHandJoint.RingTip, handRingTip.transform.position, handRingTip.transform.rotation);
+
+            // Pinky
+            UpdateAvatarJointPose(TrackedHandJoint.PinkyKnuckle, handPinky1.transform.position, handPinky1.transform.rotation);
+            UpdateAvatarJointPose(TrackedHandJoint.PinkyMiddleJoint, handPinky2.transform.position, handPinky2.transform.rotation);
+            UpdateAvatarJointPose(TrackedHandJoint.PinkyDistalJoint, handPinky3.transform.position, handPinky3.transform.rotation);
+            UpdateAvatarJointPose(TrackedHandJoint.PinkyTip, handPinkyTip.transform.position, handPinkyTip.transform.rotation);
+
+            // Wrist
+            UpdateAvatarJointPose(TrackedHandJoint.Wrist, handPinky0.transform.position, handGrip.transform.rotation);
+
+            UpdatePalm();
+        }
+
+        protected void UpdatePalm()
+        {
+            bool hasMiddleKnuckle = TryGetJoint(TrackedHandJoint.MiddleKnuckle, out var middleKnucklePose);
+            bool hasWrist = TryGetJoint(TrackedHandJoint.Wrist, out var wristPose);
+
+            if (hasMiddleKnuckle && hasWrist)
+            {
+                Vector3 wristRootPosition = wristPose.Position;
+                Vector3 middle3Position = middleKnucklePose.Position;
+
+                Vector3 palmPosition = Vector3.Lerp(wristRootPosition, middle3Position, 0.5f);
+                Quaternion palmRotation = wristPose.Rotation;
+
+                UpdateJointPose(TrackedHandJoint.Palm, palmPosition, palmRotation);
+            }
+        }
+
+        private void UpdateFakeHandJointPoses()
+        {
+            // While we can get pretty much everything done with just the grip pose, we simulate hand sizes for bounds calculations
+
+            // Index
+            Vector3 fingerTipPos = currentGripPose.Position + currentGripPose.Rotation * Vector3.forward * 0.1f;
+            UpdateJointPose(TrackedHandJoint.IndexTip, fingerTipPos, currentGripPose.Rotation);
+
+            // Handed directional offsets
+            Vector3 inWardVector;
+            if (ControllerHandedness == Handedness.Left)
+            {
+                inWardVector = currentGripPose.Rotation * Vector3.right;
+            }
+            else
+            {
+                inWardVector = currentGripPose.Rotation * -Vector3.right;
+            }
+
+            // Thumb
+            Vector3 thumbPose = currentGripPose.Position + inWardVector * 0.04f;
+            UpdateJointPose(TrackedHandJoint.ThumbTip, thumbPose, currentGripPose.Rotation);
+            UpdateJointPose(TrackedHandJoint.ThumbMetacarpalJoint, thumbPose, currentGripPose.Rotation);
+            UpdateJointPose(TrackedHandJoint.ThumbDistalJoint, thumbPose, currentGripPose.Rotation);
+
+            // Pinky
+            Vector3 pinkyPose = currentGripPose.Position - inWardVector * 0.03f;
+            UpdateJointPose(TrackedHandJoint.PinkyKnuckle, pinkyPose, currentGripPose.Rotation);
+
+            // Palm
+            UpdateJointPose(TrackedHandJoint.Palm, currentGripPose.Position, currentGripPose.Rotation);
+
+            // Wrist
+            Vector3 wristPose = currentGripPose.Position - currentGripPose.Rotation * Vector3.forward * 0.05f;
+            UpdateJointPose(TrackedHandJoint.Palm, wristPose, currentGripPose.Rotation);
+        }
+
+        protected void UpdateAvatarJointPose(TrackedHandJoint joint, Vector3 position, Quaternion rotation)
+        {
+            Quaternion correctedRotation = rotation;
+
+            // WARNING THIS CODE IS SUBJECT TO CHANGE WITH THE OCULUS SDK - This fix is a hack to fix broken and inconsistent rotations for hands
+            if (ControllerHandedness == Handedness.Left)
+            {
+                // Rotate palm 180 on X to flip up
+                //correctedRotation *= Quaternion.Euler(180f, 0f, 0f);
+
+                // Rotate palm 90 degrees on y to align x with right
+                //correctedRotation *= Quaternion.Euler(0f, 90f, 0f);
+            }
+            else
+            {
+                // Right Up direction is correct
+
+                // Rotate palm 180 on X to flip up
+                correctedRotation *= Quaternion.Euler(180f, 0f, 0f);
+
+                // Rotate palm 90 degrees on y to align x with right
+                correctedRotation *= Quaternion.Euler(0f, 90f, 0f);
+            }
+
+            UpdateJointPose(joint, position, correctedRotation);
         }
 
         protected void UpdateJointPose(TrackedHandJoint joint, Vector3 position, Quaternion rotation)
