@@ -124,13 +124,16 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
             // Todo: Complete touch controller mapping
 
             bool isTriggerPressed = false;
+            bool isGripPressed = false;
             if (ControllerHandedness == Handedness.Left)
             {
                 isTriggerPressed = OVRInput.Get(OVRInput.Axis1D.PrimaryIndexTrigger) > cTriggerDeadZone;
+                isGripPressed = OVRInput.Get(OVRInput.Axis1D.PrimaryHandTrigger) > cTriggerDeadZone;
             }
             else
             {
                 isTriggerPressed = OVRInput.Get(OVRInput.Axis1D.SecondaryIndexTrigger) > cTriggerDeadZone;
+                isGripPressed = OVRInput.Get(OVRInput.Axis1D.SecondaryHandTrigger) > cTriggerDeadZone;
             }
 
             for (int i = 0; i < Interactions?.Length; i++)
@@ -167,7 +170,7 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
                         }
                         break;
                     case DeviceInputType.TriggerPress:
-                        Interactions[i].BoolData = isTriggerPressed;
+                        Interactions[i].BoolData = isGripPressed;
 
                         if (Interactions[i].Changed)
                         {
@@ -362,7 +365,8 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
             UpdateAvatarJointPose(TrackedHandJoint.PinkyTip, handPinkyTip.transform.position, handPinkyTip.transform.rotation);
 
             // Wrist
-            UpdateAvatarJointPose(TrackedHandJoint.Wrist, handPinky0.transform.position, handGrip.transform.rotation);
+            // Wrist rotation works very differently from the other joints, so we correct it separately
+            UpdateJointPose(TrackedHandJoint.Wrist, handPinky0.transform.position, handGrip.transform.rotation);
 
             UpdatePalm();
         }
@@ -378,10 +382,26 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
                 Vector3 middle3Position = middleKnucklePose.Position;
 
                 Vector3 palmPosition = Vector3.Lerp(wristRootPosition, middle3Position, 0.5f);
-                Quaternion palmRotation = wristPose.Rotation;
+                Quaternion palmRotation = CorrectPalmRotation(wristPose.Rotation); 
 
                 UpdateJointPose(TrackedHandJoint.Palm, palmPosition, palmRotation);
             }
+        }
+
+        private Quaternion CorrectPalmRotation(Quaternion palmRotation)
+        {
+            Quaternion correctedPalmRotation = palmRotation;
+
+            // WARNING THIS CODE IS SUBJECT TO CHANGE WITH THE OCULUS SDK - This fix is a hack to fix broken and inconsistent rotations for hands
+            if (ControllerHandedness == Handedness.Right)
+            {
+                correctedPalmRotation *= Quaternion.Euler(90f, 90f, 0f);
+            }
+            else
+            {
+                correctedPalmRotation *= Quaternion.Euler(90f, 0, 90f);
+            }
+            return correctedPalmRotation;
         }
 
         private void UpdateFakeHandJointPoses()
@@ -429,18 +449,13 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
             if (ControllerHandedness == Handedness.Left)
             {
                 // Rotate palm 180 on X to flip up
-                //correctedRotation *= Quaternion.Euler(180f, 0f, 0f);
+                correctedRotation *= Quaternion.Euler(180f, 0f, 0f);
 
                 // Rotate palm 90 degrees on y to align x with right
-                //correctedRotation *= Quaternion.Euler(0f, 90f, 0f);
+                correctedRotation *= Quaternion.Euler(0f, -90f, 0f);
             }
             else
             {
-                // Right Up direction is correct
-
-                // Rotate palm 180 on X to flip up
-                correctedRotation *= Quaternion.Euler(180f, 0f, 0f);
-
                 // Rotate palm 90 degrees on y to align x with right
                 correctedRotation *= Quaternion.Euler(0f, 90f, 0f);
             }
@@ -459,6 +474,8 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
             {
                 jointPoses[joint] = pose;
             }
+
+            CoreServices.InputSystem?.RaiseHandJointsUpdated(InputSource, ControllerHandedness, jointPoses);
         }
 
         private void UpdateIndexFingerData(MixedRealityInteractionMapping interactionMapping)
