@@ -3,6 +3,7 @@ using Microsoft.MixedReality.Toolkit.Input;
 using Microsoft.MixedReality.Toolkit.Utilities;
 using System.Collections.Generic;
 using System.Linq;
+using prvncher.MixedReality.Toolkit.Config;
 using UnityEngine;
 
 namespace prvncher.MixedReality.Toolkit.OculusQuestInput
@@ -45,6 +46,35 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
             base.Enable();
 
             cameraRig = GameObject.FindObjectOfType<OVRCameraRig>();
+            if (cameraRig == null)
+            {
+                var mainCamera = Camera.main;
+                Transform cameraParent = null;
+                if (mainCamera != null)
+                {
+                    cameraParent = mainCamera.transform.parent;
+
+                    // Destroy main camera
+                    GameObject.Destroy(cameraParent.gameObject);
+                }
+
+                // Instantiate camera rig as a child of the MixedRealityPlayspace
+                cameraRig = GameObject.Instantiate(MRTKOculusConfig.Instance.OVRCameraRigPrefab);
+            }
+
+            bool useAvatarHands = MRTKOculusConfig.Instance.RenderAvatarHandsInsteadOfController;
+            // If using Avatar hands, de-activate ovr controller rendering
+            foreach (var controllerHelper in cameraRig.gameObject.GetComponentsInChildren<OVRControllerHelper>())
+            {
+                controllerHelper.gameObject.SetActive(!useAvatarHands);
+            }
+
+            if (useAvatarHands)
+            {
+                // Initialize the local avatar controller
+                GameObject.Instantiate(MRTKOculusConfig.Instance.LocalAvatarPrefab);
+            }
+
             var ovrHands = cameraRig.GetComponentsInChildren<OVRHand>();
 
             foreach (var ovrHand in ovrHands)
@@ -86,7 +116,7 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
             {
                 return trackedHands.Values.ToArray<IMixedRealityController>();
             }
-            else if(trackedControllers.Values.Count > 0)
+            else if (trackedControllers.Values.Count > 0)
             {
                 return trackedControllers.Values.ToArray<IMixedRealityController>();
             }
@@ -123,14 +153,14 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
 
         protected void UpdateController(OVRInput.Controller controller, Handedness handedness)
         {
-            if (OVRInput.IsControllerConnected(controller))
+            if (OVRInput.IsControllerConnected(controller) && OVRInput.GetControllerPositionTracked(controller))
             {
                 var touchController = GetOrAddController(handedness);
                 touchController.UpdateController(cameraRig, controller);
             }
             else
             {
-                RemoveHandDevice(handedness);
+                RemoveControllerDevice(handedness);
             }
         }
 

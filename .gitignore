@@ -70,8 +70,6 @@ crashlytics-build.properties
 /Assets/Oculus.meta
 /Assets/Plugins
 /Assets/Plugins.meta
-/Assets/Resources
-/Assets/Resources.meta
 
 # MRTK symbolic link
 /Assets/MixedRealityToolkit
