@@ -15,4 +15,5 @@ MonoBehaviour:
   renderAvatarHandsInsteadOfControllers: 1
   ovrCameraRigPrefab: {fileID: 2343937678411072827, guid: e855e4c2a827daf45be5e0ca86dd6d05,
     type: 3}
-  localAvatarPrefab: {fileID: 158226, guid: c88f6b8fcfa09ba449af097d7f5a4397, type: 3}
+  localAvatarPrefab: {fileID: 6297684789857299957, guid: bc9433565454e104f9ac73600c65a612,
+    type: 3}
