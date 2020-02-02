@@ -71,7 +71,6 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
 
             if (useAvatarHands)
             {
-
                 // Initialize the local avatar controller
                 GameObject.Instantiate(MRTKOculusConfig.Instance.LocalAvatarPrefab);
             }
@@ -154,14 +153,14 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
 
         protected void UpdateController(OVRInput.Controller controller, Handedness handedness)
         {
-            if (OVRInput.IsControllerConnected(controller))
+            if (OVRInput.IsControllerConnected(controller) && OVRInput.GetControllerPositionTracked(controller))
             {
                 var touchController = GetOrAddController(handedness);
                 touchController.UpdateController(cameraRig, controller);
             }
             else
             {
-                RemoveHandDevice(handedness);
+                RemoveControllerDevice(handedness);
             }
         }
 
