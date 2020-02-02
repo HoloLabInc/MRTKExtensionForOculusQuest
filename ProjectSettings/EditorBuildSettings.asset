@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/MixedRealityToolkit.ThirdParty/OculusQuestInput/Scenes/prvncherQuestHandInputSample.unity
-    guid: a5ab37460740ba0489b7fa4119410357
+    path: Assets/MixedRealityToolkit.ThirdParty/OculusQuestInput/Scenes/prvncherHandInteractionExamples2.unity
+    guid: e7c4e20b4cb519145b16687e63324c94
   m_configObjects: {}

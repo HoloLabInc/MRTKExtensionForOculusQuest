@@ -55,20 +55,22 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
                     cameraParent = mainCamera.transform.parent;
 
                     // Destroy main camera
-                    GameObject.Destroy(mainCamera.gameObject);
+                    GameObject.Destroy(cameraParent.gameObject);
                 }
 
                 // Instantiate camera rig as a child of the MixedRealityPlayspace
-                cameraRig = GameObject.Instantiate(MRTKOculusConfig.Instance.OVRCameraRigPrefab, cameraParent);
+                cameraRig = GameObject.Instantiate(MRTKOculusConfig.Instance.OVRCameraRigPrefab);
             }
 
-            if (MRTKOculusConfig.Instance.RenderAvatarHandsInsteadOfController)
+            bool useAvatarHands = MRTKOculusConfig.Instance.RenderAvatarHandsInsteadOfController;
+            // If using Avatar hands, de-activate ovr controller rendering
+            foreach (var controllerHelper in cameraRig.gameObject.GetComponentsInChildren<OVRControllerHelper>())
             {
-                // If using Avatar hands, de-activate ovr controller rendering
-                foreach (var controllerHelper in cameraRig.gameObject.GetComponentsInChildren<OVRControllerHelper>())
-                {
-                    controllerHelper.gameObject.SetActive(false);
-                }
+                controllerHelper.gameObject.SetActive(!useAvatarHands);
+            }
+
+            if (useAvatarHands)
+            {
 
                 // Initialize the local avatar controller
                 GameObject.Instantiate(MRTKOculusConfig.Instance.LocalAvatarPrefab);
@@ -115,7 +117,7 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
             {
                 return trackedHands.Values.ToArray<IMixedRealityController>();
             }
-            else if(trackedControllers.Values.Count > 0)
+            else if (trackedControllers.Values.Count > 0)
             {
                 return trackedControllers.Values.ToArray<IMixedRealityController>();
             }
