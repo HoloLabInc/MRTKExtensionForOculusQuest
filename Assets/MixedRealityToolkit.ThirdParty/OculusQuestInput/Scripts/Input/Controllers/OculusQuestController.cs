@@ -155,7 +155,7 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
                         }
                         break;
                     case DeviceInputType.Select:
-                        Interactions[i].BoolData = isTriggerPressed;
+                        Interactions[i].BoolData = isTriggerPressed || isGripPressed;
 
                         if (Interactions[i].Changed)
                         {
@@ -170,7 +170,7 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
                         }
                         break;
                     case DeviceInputType.TriggerPress:
-                        Interactions[i].BoolData = isGripPressed;
+                        Interactions[i].BoolData = isGripPressed || isTriggerPressed;
 
                         if (Interactions[i].Changed)
                         {
