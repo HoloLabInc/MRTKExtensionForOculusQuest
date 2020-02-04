@@ -5,6 +5,8 @@ It is recommended to use MRTK-Quest developed by Eric Provencher [@prvncher](htt
 
 https://github.com/provencher/MRTK-Quest
 
+---
+
 # MRTKExtensionForOculusQuest
 This is Mixed Reality Toolkit (MRTK) extension for Oculus Quest.
 
