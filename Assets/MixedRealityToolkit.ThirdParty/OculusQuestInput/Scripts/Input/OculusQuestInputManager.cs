@@ -72,7 +72,7 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
             if (useAvatarHands)
             {
                 // Initialize the local avatar controller
-                GameObject.Instantiate(MRTKOculusConfig.Instance.LocalAvatarPrefab);
+                GameObject.Instantiate(MRTKOculusConfig.Instance.LocalAvatarPrefab, cameraRig.trackingSpace);
             }
 
             var ovrHands = cameraRig.GetComponentsInChildren<OVRHand>();
