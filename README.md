@@ -1,3 +1,10 @@
+# Notice
+
+This repository is not maintained anymore.  
+It is recommended to use MRTK-Quest developed by Eric Provencher [@prvncher](https://twitter.com/prvncher).
+
+https://github.com/provencher/MRTK-Quest
+
 # MRTKExtensionForOculusQuest
 This is Mixed Reality Toolkit (MRTK) extension for Oculus Quest.
 
