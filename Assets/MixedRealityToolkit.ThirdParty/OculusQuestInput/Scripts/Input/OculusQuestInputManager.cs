@@ -297,7 +297,7 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
         {
             if (hand == null) return;
             CoreServices.InputSystem?.RaiseSourceLost(hand.InputSource, hand);
-            trackedControllers.Remove(hand.ControllerHandedness);
+            trackedHands.Remove(hand.ControllerHandedness);
 
             // Recycle pointers makes this loop obsolete. If you are using an MRTK version older than 2.3, please use the loop and comment out RecyclePointers.
             /*
