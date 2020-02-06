@@ -215,11 +215,15 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
             CoreServices.InputSystem?.RaiseSourceLost(controller.InputSource, controller);
             trackedControllers.Remove(controller.ControllerHandedness);
 
+            // Recycle pointers makes this loop obsolete. If you are using an MRTK version older than 2.3, please use the loop and comment out RecyclePointers.
+            /*
             foreach (IMixedRealityPointer pointer in controller.InputSource.Pointers)
             {
                 if (pointer == null) continue;
                 pointer.Controller = null;
             }
+            */
+            RecyclePointers(controller.InputSource);
         }
         #endregion
 
@@ -295,11 +299,15 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
             CoreServices.InputSystem?.RaiseSourceLost(hand.InputSource, hand);
             trackedControllers.Remove(hand.ControllerHandedness);
 
+            // Recycle pointers makes this loop obsolete. If you are using an MRTK version older than 2.3, please use the loop and comment out RecyclePointers.
+            /*
             foreach (IMixedRealityPointer pointer in hand.InputSource.Pointers)
             {
                 if (pointer == null) continue;
                 pointer.Controller = null;
             }
+            */
+            RecyclePointers(hand.InputSource);
         }
         #endregion
     }
