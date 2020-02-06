@@ -19,6 +19,13 @@ It was built to showcase the hand-driven interaction model designed by Microsoft
 - Oculus Rift/S - Windows Standalone
 - Oculus Quest  - Android / Windows Standalone w/ Link
 
+## FAQ
+Hands don't seem to work in builds, what am I doing wrong?
+- Due to licensing reasons, the Oculus Integrations folder is not included in this repo. In that folder, there is a scriptable object called *OculusProjectConfig*. In that config file, you need to set *HandTrackingSupport* to "Controllers and Hands".
+
+Avatar hands don't work for me, what am I doing wrong?
+- Avatar hand support requires an app id to be set in *Resources/OvrAvatarSettings*. This repo sets a dummy id "12345".
+
 # Getting started with my fork
 ## 1. Clone this repo
 Clone this repository, and then make sure to initialize submodules.
