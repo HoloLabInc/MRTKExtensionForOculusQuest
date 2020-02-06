@@ -194,11 +194,9 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
 
         private void RemoveControllerDevice(Handedness handedness)
         {
-            if (trackedControllers.ContainsKey(handedness))
+            if (trackedControllers.TryGetValue(handedness, out OculusQuestController controller))
             {
-                var hand = trackedControllers[handedness];
-                CoreServices.InputSystem?.RaiseSourceLost(hand.InputSource, hand);
-                trackedControllers.Remove(handedness);
+                RemoveControllerDevice(controller);
             }
         }
 
@@ -206,9 +204,22 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
         {
             foreach (var controller in trackedControllers.Values)
             {
-                CoreServices.InputSystem?.RaiseSourceLost(controller.InputSource, controller);
+                RemoveControllerDevice(controller);
             }
             trackedControllers.Clear();
+        }
+
+        private void RemoveControllerDevice(OculusQuestController controller)
+        {
+            if (controller == null) return;
+            CoreServices.InputSystem?.RaiseSourceLost(controller.InputSource, controller);
+            trackedControllers.Remove(controller.ControllerHandedness);
+
+            foreach (IMixedRealityPointer pointer in controller.InputSource.Pointers)
+            {
+                if (pointer == null) continue;
+                pointer.Controller = null;
+            }
         }
         #endregion
 
@@ -263,21 +274,32 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
 
         private void RemoveHandDevice(Handedness handedness)
         {
-            if (trackedHands.ContainsKey(handedness))
+            if (trackedHands.TryGetValue(handedness, out OculusQuestHand hand))
             {
-                var hand = trackedHands[handedness];
-                CoreServices.InputSystem?.RaiseSourceLost(hand.InputSource, hand);
-                trackedHands.Remove(handedness);
+                RemoveHandDevice(hand);
             }
         }
 
         private void RemoveAllHandDevices()
         {
-            foreach (var controller in trackedHands.Values)
+            foreach (var hand in trackedHands.Values)
             {
-                CoreServices.InputSystem?.RaiseSourceLost(controller.InputSource, controller);
+                RemoveHandDevice(hand);
             }
             trackedHands.Clear();
+        }
+
+        private void RemoveHandDevice(OculusQuestHand hand)
+        {
+            if (hand == null) return;
+            CoreServices.InputSystem?.RaiseSourceLost(hand.InputSource, hand);
+            trackedControllers.Remove(hand.ControllerHandedness);
+
+            foreach (IMixedRealityPointer pointer in hand.InputSource.Pointers)
+            {
+                if (pointer == null) continue;
+                pointer.Controller = null;
+            }
         }
         #endregion
     }
