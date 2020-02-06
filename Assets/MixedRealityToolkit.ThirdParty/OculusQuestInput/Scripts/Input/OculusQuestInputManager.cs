@@ -194,11 +194,9 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
 
         private void RemoveControllerDevice(Handedness handedness)
         {
-            if (trackedControllers.ContainsKey(handedness))
+            if (trackedControllers.TryGetValue(handedness, out OculusQuestController controller))
             {
-                var hand = trackedControllers[handedness];
-                CoreServices.InputSystem?.RaiseSourceLost(hand.InputSource, hand);
-                trackedControllers.Remove(handedness);
+                RemoveControllerDevice(controller);
             }
         }
 
@@ -206,9 +204,26 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
         {
             foreach (var controller in trackedControllers.Values)
             {
-                CoreServices.InputSystem?.RaiseSourceLost(controller.InputSource, controller);
+                RemoveControllerDevice(controller);
             }
             trackedControllers.Clear();
+        }
+
+        private void RemoveControllerDevice(OculusQuestController controller)
+        {
+            if (controller == null) return;
+            CoreServices.InputSystem?.RaiseSourceLost(controller.InputSource, controller);
+            trackedControllers.Remove(controller.ControllerHandedness);
+
+            // Recycle pointers makes this loop obsolete. If you are using an MRTK version older than 2.3, please use the loop and comment out RecyclePointers.
+            /*
+            foreach (IMixedRealityPointer pointer in controller.InputSource.Pointers)
+            {
+                if (pointer == null) continue;
+                pointer.Controller = null;
+            }
+            */
+            RecyclePointers(controller.InputSource);
         }
         #endregion
 
@@ -263,21 +278,36 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
 
         private void RemoveHandDevice(Handedness handedness)
         {
-            if (trackedHands.ContainsKey(handedness))
+            if (trackedHands.TryGetValue(handedness, out OculusQuestHand hand))
             {
-                var hand = trackedHands[handedness];
-                CoreServices.InputSystem?.RaiseSourceLost(hand.InputSource, hand);
-                trackedHands.Remove(handedness);
+                RemoveHandDevice(hand);
             }
         }
 
         private void RemoveAllHandDevices()
         {
-            foreach (var controller in trackedHands.Values)
+            foreach (var hand in trackedHands.Values)
             {
-                CoreServices.InputSystem?.RaiseSourceLost(controller.InputSource, controller);
+                RemoveHandDevice(hand);
             }
             trackedHands.Clear();
+        }
+
+        private void RemoveHandDevice(OculusQuestHand hand)
+        {
+            if (hand == null) return;
+            CoreServices.InputSystem?.RaiseSourceLost(hand.InputSource, hand);
+            trackedControllers.Remove(hand.ControllerHandedness);
+
+            // Recycle pointers makes this loop obsolete. If you are using an MRTK version older than 2.3, please use the loop and comment out RecyclePointers.
+            /*
+            foreach (IMixedRealityPointer pointer in hand.InputSource.Pointers)
+            {
+                if (pointer == null) continue;
+                pointer.Controller = null;
+            }
+            */
+            RecyclePointers(hand.InputSource);
         }
         #endregion
     }
