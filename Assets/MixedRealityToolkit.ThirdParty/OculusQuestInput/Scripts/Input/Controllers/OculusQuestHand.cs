@@ -84,7 +84,7 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
         /// Update the controller data from the provided platform state
         /// </summary>
         /// <param name="interactionSourceState">The InteractionSourceState retrieved from the platform</param>
-        public void UpdateController(OVRHand hand, OVRSkeleton ovrSkeleton)
+        public void UpdateController(OVRHand hand, OVRSkeleton ovrSkeleton, Transform trackingOrigin)
         {
             if (!Enabled || hand == null || ovrSkeleton == null)
             {
@@ -101,8 +101,12 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
             if (isTracked)
             {
                 // Leverage Oculus Platform Hand Ray - instead of simulating it in a crummy way
-                currentPointerPose.Position = hand.PointerPose.position;
-                currentPointerPose.Rotation = hand.PointerPose.rotation;
+                currentPointerPose.Position = trackingOrigin.TransformPoint(hand.PointerPose.position);
+
+                Vector3 pointerForward = trackingOrigin.TransformDirection(hand.PointerPose.forward);
+                Vector3 pointerUp = trackingOrigin.TransformDirection(hand.PointerPose.up);
+
+                currentPointerPose.Rotation = Quaternion.LookRotation(pointerForward, pointerUp);
 
                 currentGripPose = jointPoses[TrackedHandJoint.Palm];
 
@@ -237,14 +241,14 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
                     boneRotation *= Quaternion.Euler(180f, 0f, 0f);
 
                     // Rotate palm 90 degrees on y to align x with right
-                    boneRotation *= Quaternion.Euler(0f, 90f, 0f);
+                    boneRotation *= Quaternion.Euler(0f, -90, 0f);
                 }
                 else
                 {
                     // Right Up direction is correct
 
                     // Rotate palm 90 degrees on y to align x with right
-                    boneRotation *= Quaternion.Euler(0f, -90f, 0f);
+                    boneRotation *= Quaternion.Euler(0f, 90f, 0f);
                 }
 
                 UpdateJointPose(joint, boneTransform.position, boneRotation);

@@ -81,9 +81,9 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
         /// Update the controller data from the provided platform state
         /// </summary>
         /// <param name="interactionSourceState">The InteractionSourceState retrieved from the platform</param>
-        public void UpdateController(OVRCameraRig ovrRigRoot, OVRInput.Controller ovrController)
+        public void UpdateController(OVRInput.Controller ovrController, Transform trackingRoot)
         {
-            if (!Enabled || ovrRigRoot == null)
+            if (!Enabled || trackingRoot == null)
             {
                 return;
             }
@@ -91,22 +91,20 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
             IsPositionAvailable = OVRInput.GetControllerPositionValid(ovrController);
             IsRotationAvailable = OVRInput.GetControllerOrientationValid(ovrController);
 
-            Transform playSpaceTransform = ovrRigRoot.transform;
-
             // Update transform
             Vector3 localPosition = OVRInput.GetLocalControllerPosition(ovrController);
-            Vector3 worldPosition = playSpaceTransform.TransformPoint(localPosition);
+            Vector3 worldPosition = trackingRoot.TransformPoint(localPosition);
             // Debug.Log("Controller " + Handedness + " - local: " + localPosition + " - world: " + worldPosition);
 
             Quaternion localRotation = OVRInput.GetLocalControllerRotation(ovrController);
-            Quaternion worldRotation = playSpaceTransform.rotation * localRotation;
+            Quaternion worldRotation = trackingRoot.rotation * localRotation;
 
             // Update velocity
             Vector3 localVelocity = OVRInput.GetLocalControllerVelocity(ovrController);
-            Velocity = playSpaceTransform.TransformDirection(localVelocity);
+            Velocity = trackingRoot.TransformDirection(localVelocity);
 
             Vector3 localAngularVelocity = OVRInput.GetLocalControllerAngularVelocity(ovrController);
-            AngularVelocity = playSpaceTransform.TransformDirection(localAngularVelocity);
+            AngularVelocity = trackingRoot.TransformDirection(localAngularVelocity);
 
             UpdateJointPoses();
 
