@@ -156,7 +156,7 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
             if (OVRInput.IsControllerConnected(controller) && OVRInput.GetControllerPositionTracked(controller))
             {
                 var touchController = GetOrAddController(handedness);
-                touchController.UpdateController(cameraRig, controller);
+                touchController.UpdateController(controller, cameraRig.trackingSpace);
             }
             else
             {
@@ -239,7 +239,7 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
             if (ovrHand.IsTracked)
             {
                 var hand = GetOrAddHand(handedness);
-                hand.UpdateController(ovrHand, ovrSkeleton);
+                hand.UpdateController(ovrHand, ovrSkeleton, cameraRig.trackingSpace);
             }
             else
             {
