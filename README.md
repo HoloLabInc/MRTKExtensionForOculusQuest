@@ -12,7 +12,7 @@ It was built to showcase the hand-driven interaction model designed by Microsoft
 
 # Supported versions
 - Unity 2018.4.x (Currently targetting 2018.4.14f1)
-- Oculus Integration 12.0
+- Oculus Integration 13.0
 - Mixed Reality Toolkit v2.2.0+
 
 # Supported target devices
@@ -41,7 +41,7 @@ Run bat External/createSymlink.bat by double clicking it.
 This will link the MRTK folders cloned via the submodule into the project.
 
 ## 3. Import Oculus Integration
-Download Oculus Integration 12.0 from Asset Store and import it.
+Download Oculus Integration 13.0 from Asset Store and import it.
 - Alternatively just drag and drop the Oculus folder into Assets/
 
 ## 4. Project Configuration Window
