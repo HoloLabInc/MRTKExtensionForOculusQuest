@@ -125,13 +125,13 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
             bool isGripPressed = false;
             if (ControllerHandedness == Handedness.Left)
             {
-                isTriggerPressed = OVRInput.Get(OVRInput.Axis1D.PrimaryIndexTrigger) > cTriggerDeadZone;
-                isGripPressed = OVRInput.Get(OVRInput.Axis1D.PrimaryHandTrigger) > cTriggerDeadZone;
+                isTriggerPressed = OVRInput.Get(OVRInput.RawAxis1D.LIndexTrigger) > cTriggerDeadZone;
+                isGripPressed = OVRInput.Get(OVRInput.RawAxis1D.LHandTrigger) > cTriggerDeadZone;
             }
             else
             {
-                isTriggerPressed = OVRInput.Get(OVRInput.Axis1D.SecondaryIndexTrigger) > cTriggerDeadZone;
-                isGripPressed = OVRInput.Get(OVRInput.Axis1D.SecondaryHandTrigger) > cTriggerDeadZone;
+                isTriggerPressed = OVRInput.Get(OVRInput.RawAxis1D.RIndexTrigger) > cTriggerDeadZone;
+                isGripPressed = OVRInput.Get(OVRInput.RawAxis1D.RHandTrigger) > cTriggerDeadZone;
             }
 
             for (int i = 0; i < Interactions?.Length; i++)
