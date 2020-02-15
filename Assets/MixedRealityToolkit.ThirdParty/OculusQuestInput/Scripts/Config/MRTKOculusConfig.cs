@@ -54,5 +54,43 @@ namespace prvncher.MixedReality.Toolkit.Config
         /// Prefab reference for LocalAvatar to load, if none are found in scene.
         /// </summary>
         public GameObject LocalAvatarPrefab => localAvatarPrefab;
+
+
+        [Header("Performance Configuration")]
+        [SerializeField]
+        [Tooltip("Default CPU performance level (0-2 is documented), (3-5 is undocumented).")]
+        [Range(0, 2)]
+        private int defaultCpuLevel = 2;
+
+        /// <summary>
+        /// Accessor for the Oculus CPU power level.
+        /// </summary>
+        public int CPULevel
+        {
+            get => defaultCpuLevel;
+            set
+            {
+                defaultCpuLevel = value;
+                OVRManager.cpuLevel = defaultCpuLevel;
+            }
+        }
+
+        [SerializeField]
+        [Tooltip("Default GPU performance level (0-2 is documented), (3-5 is undocumented).")]
+        [Range(0, 2)]
+        private int defaultGpuLevel = 2;
+
+        /// <summary>
+        /// Accessor for the Oculus GPU power level.
+        /// </summary>
+        public int GPULevel
+        {
+            get => defaultGpuLevel;
+            set
+            {
+                defaultGpuLevel = value;
+                OVRManager.gpuLevel = defaultGpuLevel;
+            }
+        }
     }
 }
