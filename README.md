@@ -11,9 +11,9 @@ It was built to showcase the hand-driven interaction model designed by Microsoft
 [![Demo video](https://i.imgur.com/wWzTaAw.png)](https://twitter.com/prvncher/status/1211768281536847872)
 
 # Supported versions
-- Unity 2018.4.x (Currently targetting 2018.4.14f1)
+- Unity 2018.4.x (Currently targetting 2018.4.17f1). Some users have reported success with 2019.3 as well.
 - Oculus Integration 13.0
-- Mixed Reality Toolkit v2.2.0+
+- Mixed Reality Toolkit v2.3.0+
 
 # Supported target devices
 - Oculus Rift/S - Windows Standalone

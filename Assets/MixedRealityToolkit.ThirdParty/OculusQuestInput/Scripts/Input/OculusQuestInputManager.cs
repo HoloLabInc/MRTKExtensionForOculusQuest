@@ -44,7 +44,12 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
         public override void Enable()
         {
             base.Enable();
+            SetupInput();
+            ConfigurePerformancePreferences();
+        }
 
+        private void SetupInput()
+        {
             cameraRig = GameObject.FindObjectOfType<OVRCameraRig>();
             if (cameraRig == null)
             {
@@ -100,6 +105,12 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
                         break;
                 }
             }
+        }
+
+        private void ConfigurePerformancePreferences()
+        {
+           OVRManager.cpuLevel = MRTKOculusConfig.Instance.CPULevel;
+           OVRManager.gpuLevel = MRTKOculusConfig.Instance.GPULevel;
         }
 
         public override void Disable()
