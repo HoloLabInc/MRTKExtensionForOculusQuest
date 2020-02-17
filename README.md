@@ -37,7 +37,7 @@ Then clone using this command "git clone --recurse-submodules https://github.com
 This will the official MRTK development branch as well. If you'd like your own version of MRTK, simply remove "--recurse-submodules" from the command, and copy your MRTK files to the External folder, before proceeding to step 2.
 
 ## 2. Run SymLink bat
-Run bat External/createSymlink.bat by double clicking it.
+On Windows run the bat External/createSymlink.bat by double clicking it. On OS X execute the shell script via "./createSymlink.sh".
 This will link the MRTK folders cloned via the submodule into the project.
 
 ## 3. Import Oculus Integration
