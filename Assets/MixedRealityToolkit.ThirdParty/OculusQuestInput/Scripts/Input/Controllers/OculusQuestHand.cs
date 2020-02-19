@@ -24,6 +24,16 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
         private KalmanFilterVector3 palmFilter = new KalmanFilterVector3();
         private KalmanFilterVector3 indexTipFilter = new KalmanFilterVector3();
 
+
+        // Velocity internal states
+        private float deltaTimeStart;
+        private const int velocityUpdateInterval = 6;
+        private int frameOn = 0;
+        private Vector3[] velocityPositionsCache = new Vector3[velocityUpdateInterval];
+        private Vector3[] velocityNormalsCache = new Vector3[velocityUpdateInterval];
+        private Vector3 velocityPositionsSum = Vector3.zero;
+        private Vector3 velocityNormalsSum = Vector3.zero;
+
         // TODO: Hand mesh
         // private int[] handMeshTriangleIndices = null;
         // private Vector2[] handMeshUVs;
@@ -72,7 +82,7 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
                 Transform cameraTransform = CameraCache.Main.transform;
 
                 Vector3 projectedPalmUp = Vector3.ProjectOnPlane(-palmPose.Up, cameraTransform.up);
-                
+
                 // We check if the palm forward is roughly in line with the camera lookAt
                 return Vector3.Dot(cameraTransform.forward, projectedPalmUp) > 0.3f;
             }
@@ -111,6 +121,8 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
                 currentGripPose = jointPoses[TrackedHandJoint.Palm];
 
                 CoreServices.InputSystem?.RaiseSourcePoseChanged(InputSource, this, currentGripPose);
+
+                UpdateVelocity();
             }
 
             for (int i = 0; i < Interactions?.Length; i++)
@@ -275,7 +287,7 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
         protected void UpdateJointPose(TrackedHandJoint joint, Vector3 position, Quaternion rotation)
         {
             Vector3 jointPosition = position;
-            
+
             // TODO Figure out kalman filter coefficients to get good quality smoothing
             /*
             if (joint == TrackedHandJoint.IndexTip)
@@ -316,6 +328,62 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
                 CoreServices.InputSystem?.RaisePoseInputChanged(InputSource, ControllerHandedness, interactionMapping.MixedRealityInputAction, currentIndexPose);
             }
         }
+
+        protected void UpdateVelocity()
+        {
+            if (frameOn < velocityUpdateInterval)
+            {
+                velocityPositionsCache[frameOn] = GetJointPosition(TrackedHandJoint.Palm);
+                velocityPositionsSum += velocityPositionsCache[frameOn];
+                velocityNormalsCache[frameOn] = GetPalmNormal();
+                velocityNormalsSum += velocityNormalsCache[frameOn];
+            }
+            else
+            {
+                int frameIndex = frameOn % velocityUpdateInterval;
+
+                float deltaTime = Time.unscaledTime - deltaTimeStart;
+
+                Vector3 newPosition = GetJointPosition(TrackedHandJoint.Palm);
+                Vector3 newNormal = GetPalmNormal();
+
+                Vector3 newPositionsSum = velocityPositionsSum - velocityPositionsCache[frameIndex] + newPosition;
+                Vector3 newNormalsSum = velocityNormalsSum - velocityNormalsCache[frameIndex] + newNormal;
+
+                Velocity = (newPositionsSum - velocityPositionsSum) / deltaTime / velocityUpdateInterval;
+
+                Quaternion rotation = Quaternion.FromToRotation(velocityNormalsSum / velocityUpdateInterval, newNormalsSum / velocityUpdateInterval);
+                Vector3 rotationRate = rotation.eulerAngles * Mathf.Deg2Rad;
+                AngularVelocity = rotationRate / deltaTime;
+
+                velocityPositionsCache[frameIndex] = newPosition;
+                velocityNormalsCache[frameIndex] = newNormal;
+                velocityPositionsSum = newPositionsSum;
+                velocityNormalsSum = newNormalsSum;
+            }
+
+            deltaTimeStart = Time.unscaledTime;
+            frameOn++;
+        }
+
+        private Vector3 GetJointPosition(TrackedHandJoint jointToGet)
+        {
+            if (TryGetJoint(jointToGet, out MixedRealityPose pose))
+            {
+                return pose.Position;
+            }
+            return Vector3.zero;
+        }
+
+        protected Vector3 GetPalmNormal()
+        {
+            if (TryGetJoint(TrackedHandJoint.Palm, out MixedRealityPose pose))
+            {
+                return -pose.Up;
+            }
+            return Vector3.zero;
+        }
+
         #endregion
     }
 }
