@@ -17,3 +17,5 @@ MonoBehaviour:
     type: 3}
   localAvatarPrefab: {fileID: 6297684789857299957, guid: bc9433565454e104f9ac73600c65a612,
     type: 3}
+  defaultCpuLevel: 4
+  defaultGpuLevel: 4
