@@ -37,7 +37,9 @@ To do this, open a command line terminal, rooted on the folder you'd like the pr
 
 Then clone using this command "git clone --recurse-submodules https://github.com/provencher/MRTK-Quest.git"
 
-    This will clone the official MRTK development branch as well. If you'd like your own version of MRTK, simply remove "--recurse-submodules" from the command, and copy your MRTK files to the External folder, before proceeding to step 2.
+    This will clone the official MRTK development branch as well. 
+    If you'd like your own version of MRTK, simply remove "--recurse-submodules" from the command, 
+    and copy your MRTK files to the External folder, before proceeding to step 2.
 
 ### 1b. Develop an existing MRTK application
 Simply [download](https://github.com/provencher/MRTK-Quest/releases/download/v0.4.5/MRTK-Quest_v0.4.5.unitypackage) the MRTK-Quest **.unitypackage** from the latest **[Release page.](https://github.com/provencher/MRTK-Quest/releases/tag/v0.4.5)**.
@@ -72,7 +74,8 @@ Download Oculus Integration 13.0 from Asset Store and import it.
 ## 4. Project Configuration Window
 MRTK has a Project Configuration modal window that pops up when you first open a project.
 
-- **MultiThreaded Rendering** The project configuration window will attempt to disable this option, however, from my testing with Quest, it works properly, and improves performance.
+- **MultiThreaded Rendering** The project configuration window will attempt to disable this option, 
+however, from my testing with Quest, it works properly, and improves performance.
 
 - **[Possibly obsolete][MSBuild]** In this window, there is a checkbox for MSBuild, which will attempt to add MSBuild to your manifest.json that then adds various DLLs to your project via NuGET. MSBuild is not currently necessary for functional Android builds. This may change in the future. If you are approching the 256 character path limit, this may cause problems for you.
 
