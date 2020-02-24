@@ -26,19 +26,44 @@ Hands don't seem to work in builds, what am I doing wrong?
 Avatar hands don't work for me, what am I doing wrong?
 - Avatar hand support requires an app id to be set in *Resources/OvrAvatarSettings*. This repo sets a dummy id "12345".
 
-# Getting started with my fork
-## 1. Clone this repo
+# Getting started with MRTK-Quest
+
+## 1. Obtain MRTK-Quest
+
+### 1a. Develop with the MRTK-Quest repository directly
 Clone this repository, and then make sure to initialize submodules.
 To do this, open a command line terminal, rooted on the folder you'd like the project to be in. 
 (Hold shift + right click -> Select "Open Powershell Window Here")
 
 Then clone using this command "git clone --recurse-submodules https://github.com/provencher/MRTK-Quest.git"
 
-This will the official MRTK development branch as well. If you'd like your own version of MRTK, simply remove "--recurse-submodules" from the command, and copy your MRTK files to the External folder, before proceeding to step 2.
+This will clone the official MRTK development branch as well. If you'd like your own version of MRTK, simply remove "--recurse-submodules" from the command, and copy your MRTK files to the External folder, before proceeding to step 2.
 
-## 2. Run SymLink bat
-On Windows run the bat External/createSymlink.bat by double clicking it. On OS X execute the shell script via "./createSymlink.sh".
-This will link the MRTK folders cloned via the submodule into the project.
+### 1b. Develop an existing MRTK application
+Simply [download](https://github.com/provencher/MRTK-Quest/releases/download/v0.4.5/MRTK-Quest_v0.4.5.unitypackage) the MRTK-Quest **.unitypackage** from the latest **[Release page.](https://github.com/provencher/MRTK-Quest/releases/tag/v0.4.5)**.
+
+If MRTK is already in your project, move to step 3.
+
+## 2. Import MRTK
+
+### 2a. Obtain MRTK from cloning the submodule included with this REPO
+MRTK will be located in your **External** folder.
+
+If you wish to **develop MRTK**, and modify code within in it, independently from your project, this is the preferred approach.
+
+    Since MRTK is located in **External**, it will be necessary to make them appear as if they are in **Assets**.
+    To accomplish this, you will need to create a SymLink.
+
+    - On Windows run the bat External/createSymlink.bat by double clicking it. 
+    - On OS X execute the shell script via "./createSymlink.sh".
+    This will link the MRTK folders cloned via the submodule into the project.
+
+### 2b. Obtain MRTK via alternative means
+It is possible to import MRTK directly into the Assets folder by downloading the [latest oficial release](https://github.com/microsoft/MixedRealityToolkit-Unity/releases), or via alternative means like nuget.
+
+If you wish to use MRTK as a library, and wait for official releases, this is the preferred approach.
+
+    Simply move onto step 3 if your project has MRTK configured this way.
 
 ## 3. Import Oculus Integration
 Download Oculus Integration 13.0 from Asset Store and import it.
@@ -46,8 +71,12 @@ Download Oculus Integration 13.0 from Asset Store and import it.
 
 ## 4. Project Configuration Window
 MRTK has a Project Configuration modal window that pops up when you first open a project.
-In this window, there is a checkbox for MSBuild, which will attempt to add MSBuild to your manifest.json that then adds various DLLs to your project via NuGET.
-If like myself, your git folder is not in your drive root, you may run into [errors](https://github.com/microsoft/MixedRealityToolkit-Unity/issues/6972) as I have. For now, it seems that avoiding MSBuild does not raise any problems, but that may change in the future.
+
+- **MultiThreaded Rendering** The project configuration window will attempt to disable this option, however, from my testing with Quest, it works properly, and improves performance.
+
+- **[Possibly obsolete]** In this window, there is a checkbox for MSBuild, which will attempt to add MSBuild to your manifest.json that then adds various DLLs to your project via NuGET. 
+
+MSBuild is not currently necessary for functional Android builds. This may change in the future. If you are approching the 256 character path limit, this may cause problems for you.
 
 
 # Author
