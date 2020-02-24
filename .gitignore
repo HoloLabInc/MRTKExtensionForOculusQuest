@@ -94,3 +94,5 @@ MSBuildForUnity.Common.props
 Assets/IgnoreExtensions/
 
 Assets/IgnoreExtensions.meta
+
+ProjectSettings/UnityConnectSettings.asset
