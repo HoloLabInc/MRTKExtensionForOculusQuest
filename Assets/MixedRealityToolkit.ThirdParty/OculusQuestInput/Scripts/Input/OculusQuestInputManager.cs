@@ -109,8 +109,10 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
 
         private void ConfigurePerformancePreferences()
         {
-           OVRManager.cpuLevel = MRTKOculusConfig.Instance.CPULevel;
+#if !UNITY_EDITOR
+            OVRManager.cpuLevel = MRTKOculusConfig.Instance.CPULevel;
            OVRManager.gpuLevel = MRTKOculusConfig.Instance.GPULevel;
+#endif
         }
 
         public override void Disable()
@@ -213,7 +215,10 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
 
         private void RemoveAllControllerDevices()
         {
-            foreach (var controller in trackedControllers.Values)
+            if (trackedControllers.Count == 0) return;
+
+            // Create a new list to avoid causing an error removing items from a list currently being iterated on.
+            foreach (var controller in new List<OculusQuestController>(trackedControllers.Values))
             {
                 RemoveControllerDevice(controller);
             }
@@ -297,7 +302,10 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
 
         private void RemoveAllHandDevices()
         {
-            foreach (var hand in trackedHands.Values)
+            if(trackedHands.Count == 0) return;
+
+            // Create a new list to avoid causing an error removing items from a list currently being iterated on.
+            foreach (var hand in new List<OculusQuestHand>(trackedHands.Values))
             {
                 RemoveHandDevice(hand);
             }
