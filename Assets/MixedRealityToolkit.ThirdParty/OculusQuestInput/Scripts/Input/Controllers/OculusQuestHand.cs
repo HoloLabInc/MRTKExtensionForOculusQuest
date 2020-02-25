@@ -8,7 +8,7 @@ using static OVRSkeleton;
 namespace prvncher.MixedReality.Toolkit.OculusQuestInput
 {
     [MixedRealityController(SupportedControllerType.ArticulatedHand, new[] { Handedness.Left, Handedness.Right })]
-    public class OculusQuestHand : BaseController, IMixedRealityHand
+    public class OculusQuestHand : BaseHand, IMixedRealityHand
     {
         private MixedRealityPose currentPointerPose = MixedRealityPose.ZeroIdentity;
 
@@ -56,7 +56,7 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
         #region IMixedRealityHand Implementation
 
         /// <inheritdoc/>
-        public bool TryGetJoint(TrackedHandJoint joint, out MixedRealityPose pose)
+        public override bool TryGetJoint(TrackedHandJoint joint, out MixedRealityPose pose)
         {
             return jointPoses.TryGetValue(joint, out pose);
         }
@@ -72,7 +72,7 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
                 Transform cameraTransform = CameraCache.Main.transform;
 
                 Vector3 projectedPalmUp = Vector3.ProjectOnPlane(-palmPose.Up, cameraTransform.up);
-                
+
                 // We check if the palm forward is roughly in line with the camera lookAt
                 return Vector3.Dot(cameraTransform.forward, projectedPalmUp) > 0.3f;
             }
@@ -111,6 +111,8 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
                 currentGripPose = jointPoses[TrackedHandJoint.Palm];
 
                 CoreServices.InputSystem?.RaiseSourcePoseChanged(InputSource, this, currentGripPose);
+
+                UpdateVelocity();
             }
 
             for (int i = 0; i < Interactions?.Length; i++)
@@ -275,7 +277,7 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
         protected void UpdateJointPose(TrackedHandJoint joint, Vector3 position, Quaternion rotation)
         {
             Vector3 jointPosition = position;
-            
+
             // TODO Figure out kalman filter coefficients to get good quality smoothing
             /*
             if (joint == TrackedHandJoint.IndexTip)
@@ -316,6 +318,7 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
                 CoreServices.InputSystem?.RaisePoseInputChanged(InputSource, ControllerHandedness, interactionMapping.MixedRealityInputAction, currentIndexPose);
             }
         }
+
         #endregion
     }
 }
