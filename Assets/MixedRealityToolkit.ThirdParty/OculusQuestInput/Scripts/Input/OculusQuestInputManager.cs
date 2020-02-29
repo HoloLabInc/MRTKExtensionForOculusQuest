@@ -109,10 +109,7 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
 
         private void ConfigurePerformancePreferences()
         {
-#if !UNITY_EDITOR
-            OVRManager.cpuLevel = MRTKOculusConfig.Instance.CPULevel;
-           OVRManager.gpuLevel = MRTKOculusConfig.Instance.GPULevel;
-#endif
+            MRTKOculusConfig.Instance.ApplyConfiguredPerformanceSettings();
         }
 
         public override void Disable()

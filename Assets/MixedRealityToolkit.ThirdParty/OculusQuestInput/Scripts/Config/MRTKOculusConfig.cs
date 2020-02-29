@@ -71,9 +71,7 @@ namespace prvncher.MixedReality.Toolkit.Config
             set
             {
                 defaultCpuLevel = value;
-#if !UNITY_EDITOR
-                OVRManager.cpuLevel = defaultCpuLevel;
-#endif
+                ApplyConfiguredPerformanceSettings();
             }
         }
 
@@ -91,10 +89,16 @@ namespace prvncher.MixedReality.Toolkit.Config
             set
             {
                 defaultGpuLevel = value;
-#if !UNITY_EDITOR
-                OVRManager.gpuLevel = defaultGpuLevel;
-#endif
+                ApplyConfiguredPerformanceSettings();
             }
+        }
+
+        public void ApplyConfiguredPerformanceSettings()
+        {
+#if !UNITY_EDITOR
+            OVRManager.cpuLevel = CPULevel;
+            OVRManager.gpuLevel = GPULevel;
+#endif
         }
     }
 }
