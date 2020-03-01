@@ -1,7 +1,36 @@
-﻿using Microsoft.MixedReality.Toolkit;
+﻿//------------------------------------------------------------------------------ -
+//MRTK - Quest
+//https ://github.com/provencher/MRTK-Quest
+//------------------------------------------------------------------------------ -
+//
+//MIT License
+//
+//Copyright(c) 2020 Eric Provencher
+//
+//Permission is hereby granted, free of charge, to any person obtaining a copy
+//of this software and associated documentation files(the "Software"), to deal
+//in the Software without restriction, including without limitation the rights
+//to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
+//copies of the Software, and to permit persons to whom the Software is
+//furnished to do so, subject to the following conditions :
+//
+//The above copyright notice and this permission notice shall be included in all
+//copies or substantial portions of the Software.
+//
+//THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
+//AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+//SOFTWARE.
+//------------------------------------------------------------------------------ -
+
+using Microsoft.MixedReality.Toolkit;
 using Microsoft.MixedReality.Toolkit.Input;
 using Microsoft.MixedReality.Toolkit.Utilities;
 using System.Collections.Generic;
+using prvncher.MixedReality.Toolkit.Config;
 using UnityEngine;
 using static OVRSkeleton;
 
@@ -24,15 +53,38 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
         private KalmanFilterVector3 palmFilter = new KalmanFilterVector3();
         private KalmanFilterVector3 indexTipFilter = new KalmanFilterVector3();
 
+        private readonly Material handMaterial;
+        private Renderer handRenderer;
+
         // TODO: Hand mesh
         // private int[] handMeshTriangleIndices = null;
         // private Vector2[] handMeshUVs;
 
-        public OculusQuestHand(TrackingState trackingState, Handedness controllerHandedness, IMixedRealityInputSource inputSource = null, MixedRealityInteractionMapping[] interactions = null)
+        private int pinchStrengthProp;
+
+        public OculusQuestHand(TrackingState trackingState, Handedness controllerHandedness, OVRHand ovrHand, Material handMaterial, IMixedRealityInputSource inputSource = null, MixedRealityInteractionMapping[] interactions = null)
             : base(trackingState, controllerHandedness, inputSource, interactions)
         {
             palmFilter.Reset();
             indexTipFilter.Reset();
+            this.handMaterial = handMaterial;
+            handRenderer = ovrHand.GetComponent<Renderer>();
+
+            if (!MRTKOculusConfig.Instance.UseCustomHandMaterial) return;
+
+            handRenderer.sharedMaterial = handMaterial;
+            if (MRTKOculusConfig.Instance.UpdateMaterialPinchStrengthValue)
+            {
+                pinchStrengthProp = Shader.PropertyToID(MRTKOculusConfig.Instance.PinchStrengthMaterialProperty);
+            }
+        }
+
+        public void CleanupHand()
+        {
+            if (handRenderer != null)
+            {
+                handRenderer.enabled = false;
+            }
         }
 
         public override MixedRealityInteractionMapping[] DefaultInteractions => new[]
@@ -90,7 +142,7 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
             {
                 return;
             }
-
+            
             UpdateHandData(hand, ovrSkeleton);
 
             IsPositionAvailable = hand.IsTracked;
@@ -114,6 +166,7 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
 
                 UpdateVelocity();
             }
+
 
             for (int i = 0; i < Interactions?.Length; i++)
             {
@@ -224,6 +277,18 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
                 // If not yet pinching, only consider pinching if finger confidence is high
                 IsPinching = ovrHand.GetFingerIsPinching(OVRHand.HandFinger.Index)
                              && ovrHand.GetFingerConfidence(OVRHand.HandFinger.Index) == OVRHand.TrackingConfidence.High;
+            }
+
+
+            // Disable hand if not tracked
+            if (handRenderer != null)
+            {
+                handRenderer.enabled = ovrHand.IsTracked;
+            }
+
+            if (MRTKOculusConfig.Instance.UpdateMaterialPinchStrengthValue)
+            {
+                handMaterial.SetFloat(pinchStrengthProp, ovrHand.GetFingerPinchStrength(OVRHand.HandFinger.Index));
             }
         }
 
