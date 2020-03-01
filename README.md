@@ -8,7 +8,7 @@ It was built to showcase the hand-driven interaction model designed by Microsoft
 - Full support for any interaction in the MRTK designed to work for HoloLens 2.
 
 ## Demo Video
-[![Demo video](https://i.imgur.com/wWzTaAw.png)](https://twitter.com/prvncher/status/1211768281536847872)
+[![Demo video](https://user-images.githubusercontent.com/7420990/75618297-21b59300-5b3a-11ea-8093-365ce3921c15.gif)](https://twitter.com/i/status/1233945007486390273)
 
 # Supported versions
 - Unity 2018.4.x (Currently targetting 2018.4.17f1). Some users have reported success with 2019.3 as well.
@@ -78,6 +78,12 @@ MRTK has a Project Configuration modal window that pops up when you first open a
 however, from my testing with Quest, it works properly, and improves performance.
 
 - **[Possibly obsolete][MSBuild]** In this window, there is a checkbox for MSBuild, which will attempt to add MSBuild to your manifest.json that then adds various DLLs to your project via NuGET. MSBuild is not currently necessary for functional Android builds. This may change in the future. If you are approching the 256 character path limit, this may cause problems for you.
+
+## 5. MRTK-Quest Integration Configuration
+New Config scriptable object exposing hand mesh material and performance seetings.
+This is a project singleton located in Resources/MRTK-OculusConfig    
+![image](https://user-images.githubusercontent.com/7420990/75618441-81ad3900-5b3c-11ea-9baa-9ac2833e8dad.png)
+
 
 # Author
 Eric Provencher [@prvncher](https://twitter.com/prvncher)
