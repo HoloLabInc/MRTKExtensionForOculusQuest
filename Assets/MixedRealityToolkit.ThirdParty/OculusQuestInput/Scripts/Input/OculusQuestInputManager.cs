@@ -20,10 +20,16 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
         private OVRCameraRig cameraRig;
 
         private OVRHand rightHand;
+        private OVRMeshRenderer righMeshRenderer;
         private OVRSkeleton rightSkeleton;
+        private Material rightHandMaterial;
 
         private OVRHand leftHand;
+        private OVRMeshRenderer leftMeshRenderer;
         private OVRSkeleton leftSkeleton;
+        private Material leftHandMaterial;
+
+        private bool handsInitialized = false;
 
         /// <summary>
         /// Constructor.
@@ -84,8 +90,10 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
 
             foreach (var ovrHand in ovrHands)
             {
+                // Manage Hand skeleton data
                 var skeltonDataProvider = ovrHand as OVRSkeleton.IOVRSkeletonDataProvider;
                 var skeltonType = skeltonDataProvider.GetSkeletonType();
+                var meshRenderer = ovrHand.GetComponent<OVRMeshRenderer>();
 
                 var ovrSkelton = ovrHand.GetComponent<OVRSkeleton>();
                 if (ovrSkelton == null)
@@ -98,10 +106,12 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
                     case OVRSkeleton.SkeletonType.HandLeft:
                         leftHand = ovrHand;
                         leftSkeleton = ovrSkelton;
+                        leftMeshRenderer = meshRenderer;
                         break;
                     case OVRSkeleton.SkeletonType.HandRight:
                         rightHand = ovrHand;
                         rightSkeleton = ovrSkelton;
+                        righMeshRenderer = meshRenderer;
                         break;
                 }
             }
@@ -243,16 +253,21 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
         #region Hand Management
         protected void UpdateHands()
         {
-            UpdateHand(rightHand, rightSkeleton, Handedness.Right);
-            UpdateHand(leftHand, leftSkeleton, Handedness.Left);
+            UpdateHand(rightHand, rightSkeleton, righMeshRenderer, Handedness.Right);
+            UpdateHand(leftHand, leftSkeleton, righMeshRenderer, Handedness.Left);
         }
 
-        protected void UpdateHand(OVRHand ovrHand, OVRSkeleton ovrSkeleton, Handedness handedness)
+        protected void UpdateHand(OVRHand ovrHand, OVRSkeleton ovrSkeleton, OVRMeshRenderer ovrMeshRenderer, Handedness handedness)
         {
+            // Until the ovrMeshRenderer is initialized we do nothing with the hand
+            // This is a bit of a hack because the Oculus Integration fails if we touch the renderer before it has initialized itself
+            if (ovrMeshRenderer == null || !ovrMeshRenderer.IsInitialized) return;
+
             if (ovrHand.IsTracked)
             {
-                var hand = GetOrAddHand(handedness);
+                var hand = GetOrAddHand(handedness, ovrHand);
                 hand.UpdateController(ovrHand, ovrSkeleton, cameraRig.trackingSpace);
+                handsInitialized = true;
             }
             else
             {
@@ -260,11 +275,29 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
             }
         }
 
-        private OculusQuestHand GetOrAddHand(Handedness handedness)
+        private OculusQuestHand GetOrAddHand(Handedness handedness, OVRHand ovrHand)
         {
             if (trackedHands.ContainsKey(handedness))
             {
                 return trackedHands[handedness];
+            }
+
+            Material handMaterial = null;
+            if (handedness == Handedness.Right)
+            {
+                if (rightHandMaterial == null)
+                {
+                    rightHandMaterial = new Material(MRTKOculusConfig.Instance.CustomHandMaterial);
+                }
+                handMaterial = rightHandMaterial;
+            }
+            else
+            {
+                if (leftHandMaterial == null)
+                {
+                    leftHandMaterial = new Material(MRTKOculusConfig.Instance.CustomHandMaterial);
+                }
+                handMaterial = leftHandMaterial;
             }
 
             // Add new hand
@@ -274,7 +307,7 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
             IMixedRealityInputSystem inputSystem = Service as IMixedRealityInputSystem;
             var inputSource = inputSystem?.RequestNewGenericInputSource($"Oculus Quest {handedness} Hand", pointers, inputSourceType);
 
-            var controller = new OculusQuestHand(TrackingState.Tracked, handedness, inputSource);
+            var controller = new OculusQuestHand(TrackingState.Tracked, handedness, ovrHand, handMaterial, inputSource);
             controller.SetupConfiguration(typeof(OculusQuestHand));
 
             for (int i = 0; i < controller.InputSource?.Pointers?.Length; i++)
@@ -312,6 +345,8 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
         private void RemoveHandDevice(OculusQuestHand hand)
         {
             if (hand == null) return;
+
+            hand.CleanupHand();
             CoreServices.InputSystem?.RaiseSourceLost(hand.InputSource, hand);
             trackedHands.Remove(hand.ControllerHandedness);
 

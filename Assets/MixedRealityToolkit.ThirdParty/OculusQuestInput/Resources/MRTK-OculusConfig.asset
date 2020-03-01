@@ -17,5 +17,7 @@ MonoBehaviour:
     type: 3}
   localAvatarPrefab: {fileID: 6297684789857299957, guid: bc9433565454e104f9ac73600c65a612,
     type: 3}
+  useCustomHandMaterial: 1
+  customHandMaterial: {fileID: 2100000, guid: d8b2e8e40e412d04895b57cba8b9650d, type: 2}
   defaultCpuLevel: 4
   defaultGpuLevel: 4
