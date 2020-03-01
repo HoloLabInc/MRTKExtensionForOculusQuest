@@ -11,7 +11,7 @@ It was built to showcase the hand-driven interaction model designed by Microsoft
 [![Demo video](https://user-images.githubusercontent.com/7420990/75618297-21b59300-5b3a-11ea-8093-365ce3921c15.gif)](https://twitter.com/i/status/1233945007486390273)
 
 # Supported versions
-- Unity 2018.4.x (Currently targetting 2018.4.17f1). Some users have reported success with 2019.3 as well.
+- Unity 2018.4.x (Currently targetting 2018.4.18f1). Some users have reported success with 2019.3 as well.
 - Oculus Integration 13.0
 - Mixed Reality Toolkit v2.3.0+
 
