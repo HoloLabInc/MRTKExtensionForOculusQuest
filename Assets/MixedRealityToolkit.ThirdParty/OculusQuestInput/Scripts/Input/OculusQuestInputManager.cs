@@ -226,7 +226,6 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
             var inputSource = inputSystem?.RequestNewGenericInputSource($"Oculus Quest {handedness} Controller", pointers, inputSourceType);
 
             var controller = new OculusQuestController(TrackingState.Tracked, handedness, inputSource);
-            controller.SetupConfiguration(typeof(OculusQuestController));
 
             for (int i = 0; i < controller.InputSource?.Pointers?.Length; i++)
             {
@@ -336,7 +335,6 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
             var inputSource = inputSystem?.RequestNewGenericInputSource($"Oculus Quest {handedness} Hand", pointers, inputSourceType);
 
             var controller = new OculusQuestHand(TrackingState.Tracked, handedness, ovrHand, handMaterial, inputSource);
-            controller.SetupConfiguration(typeof(OculusQuestHand));
 
             for (int i = 0; i < controller.InputSource?.Pointers?.Length; i++)
             {
