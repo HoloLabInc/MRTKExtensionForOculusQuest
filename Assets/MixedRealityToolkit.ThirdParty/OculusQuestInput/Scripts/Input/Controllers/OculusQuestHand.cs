@@ -62,6 +62,20 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
 
         private int pinchStrengthProp;
 
+        /// <summary>
+        /// Default constructor used by reflection for profiles
+        /// </summary>
+        /// <param name="trackingState"></param>
+        /// <param name="controllerHandedness"></param>
+        /// <param name="inputSource"></param>
+        /// <param name="interactions"></param>
+        public OculusQuestHand(TrackingState trackingState, Handedness controllerHandedness, IMixedRealityInputSource inputSource = null, MixedRealityInteractionMapping[] interactions = null)
+            : base(trackingState, controllerHandedness, inputSource, interactions)
+        {
+            palmFilter.Reset();
+            indexTipFilter.Reset();
+        }
+
         public OculusQuestHand(TrackingState trackingState, Handedness controllerHandedness, OVRHand ovrHand, Material handMaterial, IMixedRealityInputSource inputSource = null, MixedRealityInteractionMapping[] interactions = null)
             : base(trackingState, controllerHandedness, inputSource, interactions)
         {
@@ -286,7 +300,7 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
                 handRenderer.enabled = ovrHand.IsTracked;
             }
 
-            if (MRTKOculusConfig.Instance.UpdateMaterialPinchStrengthValue)
+            if (MRTKOculusConfig.Instance.UpdateMaterialPinchStrengthValue && handMaterial != null)
             {
                 handMaterial.SetFloat(pinchStrengthProp, ovrHand.GetFingerPinchStrength(OVRHand.HandFinger.Index));
             }
