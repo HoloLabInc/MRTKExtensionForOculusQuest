@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7612acbc1a4a4ed0afa5f4ccbe42bee4, type: 3}
-  m_Name: OculusQuestHandInputConfigurationProfile
+  m_Name: MRTK-Quest_Profile
   m_EditorClassIdentifier: 
   isCustomProfile: 1
   targetExperienceScale: 3
   enableCameraSystem: 1
-  cameraProfile: {fileID: 11400000, guid: 87c0296d445f3b84fb83bb9464a93f1d, type: 2}
+  cameraProfile: {fileID: 11400000, guid: cd071e4825d7028469978568a7f2dc33, type: 2}
   cameraSystemType:
     reference: Microsoft.MixedReality.Toolkit.CameraSystem.MixedRealityCameraSystem,
       Microsoft.MixedReality.Toolkit.Services.CameraSystem
   enableInputSystem: 1
-  inputSystemProfile: {fileID: 11400000, guid: fe4aa204638197c45a7e319f69b02d91, type: 2}
+  inputSystemProfile: {fileID: 11400000, guid: b1a37a76680ae90459bafe77aaafaf85, type: 2}
   inputSystemType:
     reference: Microsoft.MixedReality.Toolkit.Input.MixedRealityInputSystem, Microsoft.MixedReality.Toolkit.Services.InputSystem
   enableBoundarySystem: 0
@@ -39,7 +39,7 @@ MonoBehaviour:
       Microsoft.MixedReality.Toolkit.Services.SpatialAwarenessSystem
   spatialAwarenessSystemProfile: {fileID: 11400000, guid: 97da727944a3d7b4caf42d2273271a24,
     type: 2}
-  diagnosticsSystemProfile: {fileID: 11400000, guid: 5d1ed5d121fbaaa428326197ec15487a,
+  diagnosticsSystemProfile: {fileID: 11400000, guid: d7ee1172c6e01cd459baae622a5fce91,
     type: 2}
   enableDiagnosticsSystem: 1
   diagnosticsSystemType:

@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b71cb900fa9dec5488df2deb180db58f, type: 3}
-  m_Name: OculusQuestHandInputSystemProfile
+  m_Name: MRTK-Quest_InputProfile
   m_EditorClassIdentifier: 
   isCustomProfile: 1
   dataProviderConfigurations:
@@ -20,6 +20,13 @@ MonoBehaviour:
     componentName: Windows Mixed Reality Device Manager
     priority: 0
     runtimePlatform: 8
+    deviceManagerProfile: {fileID: 0}
+  - componentType:
+      reference: Microsoft.MixedReality.Toolkit.OpenVR.Input.OpenVRDeviceManager,
+        Microsoft.MixedReality.Toolkit.Providers.OpenVR
+    componentName: OpenVR Device Manager
+    priority: 0
+    runtimePlatform: 7
     deviceManagerProfile: {fileID: 0}
   - componentType:
       reference: Microsoft.MixedReality.Toolkit.Input.UnityInput.UnityTouchDeviceManager,
@@ -67,7 +74,7 @@ MonoBehaviour:
         prvncher.MixedReality.Toolkit.OculusQuestInput
     componentName: Oculus Quest Input Manager
     priority: 0
-    runtimePlatform: 241
+    runtimePlatform: 33
     deviceManagerProfile: {fileID: 0}
   focusProviderType:
     reference: Microsoft.MixedReality.Toolkit.Input.FocusProvider, Microsoft.MixedReality.Toolkit.Services.InputSystem
@@ -81,10 +88,12 @@ MonoBehaviour:
     type: 2}
   pointerProfile: {fileID: 11400000, guid: 48aa63a9725047b28d4137fd0834bc31, type: 2}
   gesturesProfile: {fileID: 11400000, guid: bd7829a9b29409045a745b5a18299291, type: 2}
-  speechCommandsProfile: {fileID: 0}
+  speechCommandsProfile: {fileID: 11400000, guid: e8d0393e66374dae9646851a57dc6bc1,
+    type: 2}
   enableControllerMapping: 1
   controllerMappingProfile: {fileID: 11400000, guid: 39ded1fd0711a0c448413d0e1ec4f7f3,
     type: 2}
-  controllerVisualizationProfile: {fileID: 0}
-  handTrackingProfile: {fileID: 11400000, guid: e445e6fda57508c46935bb141b7673a7,
+  controllerVisualizationProfile: {fileID: 11400000, guid: 345c06fdf3732db46b96299bd3cba653,
+    type: 2}
+  handTrackingProfile: {fileID: 11400000, guid: 1e40808bbbe3d23478d09cede9e29b30,
     type: 2}
