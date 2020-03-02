@@ -227,6 +227,9 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
 
             var controller = new OculusQuestController(TrackingState.Tracked, handedness, inputSource);
 
+            // Code is obsolete later on, but older MRTK versions require it.
+            controller.SetupConfiguration(typeof(OculusQuestController));
+
             for (int i = 0; i < controller.InputSource?.Pointers?.Length; i++)
             {
                 controller.InputSource.Pointers[i].Controller = controller;
@@ -335,6 +338,9 @@ namespace prvncher.MixedReality.Toolkit.OculusQuestInput
             var inputSource = inputSystem?.RequestNewGenericInputSource($"Oculus Quest {handedness} Hand", pointers, inputSourceType);
 
             var controller = new OculusQuestHand(TrackingState.Tracked, handedness, ovrHand, handMaterial, inputSource);
+
+            // Code is obsolete later on, but older MRTK versions require it.
+            controller.SetupConfiguration(typeof(OculusQuestHand));
 
             for (int i = 0; i < controller.InputSource?.Pointers?.Length; i++)
             {
