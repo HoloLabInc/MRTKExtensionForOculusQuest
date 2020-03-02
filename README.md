@@ -42,7 +42,7 @@ Then clone using this command "git clone --recurse-submodules https://github.com
     and copy your MRTK files to the External folder, before proceeding to step 2.
 
 ### 1b. Develop an existing MRTK application
-Simply [download](https://github.com/provencher/MRTK-Quest/releases/download/v0.4.5/MRTK-Quest_v0.4.5.unitypackage) the MRTK-Quest **.unitypackage** from the latest **[Release page.](https://github.com/provencher/MRTK-Quest/releases/tag/v0.4.5)**.
+Simply [download](https://github.com/provencher/MRTK-Quest/releases/download/v0.5.2/MRTK-Quest_v0.5.2.unitypackage) the MRTK-Quest **.unitypackage** from the latest **[Release page.](https://github.com/provencher/MRTK-Quest/releases)**.
 
     If MRTK is already in your project, move to step 3.
 
