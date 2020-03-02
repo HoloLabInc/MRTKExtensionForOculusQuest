@@ -85,6 +85,10 @@ This is a project singleton located in Resources/MRTK-OculusConfig
 ![image](https://user-images.githubusercontent.com/7420990/75618441-81ad3900-5b3c-11ea-9baa-9ac2833e8dad.png)
 
 
+## 6. Community and support
+If you'd like to discuss your issues or ideas to improve this project, please join us over on the [HoloDevs Slack](https://holodevelopersslack.azurewebsites.net/).
+There is a public channel called #MRTK-Quest.
+
 # Author
 Eric Provencher [@prvncher](https://twitter.com/prvncher)
 
